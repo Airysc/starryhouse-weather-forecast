@@ -4,6 +4,7 @@ from datetime import datetime
 import requests
 
 BASE = "https://opendata.cwa.gov.tw/api/v1/rest/datastore/"
+FILEAPI = "https://opendata.cwa.gov.tw/fileapi/v1/opendataapi/"
 
 
 def _get(dataset: str, key: str, **params) -> dict:
@@ -24,32 +25,55 @@ def _num(v):
         return None
 
 
+def _find_location(obj, name: str):
+    """fileapi 的 JSON 巢狀層級不固定，遞迴找 LocationName 相符的節點"""
+    if isinstance(obj, dict):
+        if (obj.get("LocationName") or obj.get("locationName")) == name:
+            return obj
+        for v in obj.values():
+            r = _find_location(v, name)
+            if r is not None:
+                return r
+    elif isinstance(obj, list):
+        for v in obj:
+            r = _find_location(v, name)
+            if r is not None:
+                return r
+    return None
+
+
 def forecast_3h(cfg: dict, key: str) -> list[dict]:
-    """回傳 [{start, end, weather, pop, temp, rh}]，依時間排序。"""
+    """回傳 [{start, end, weather, pop, temp, rh, desc}]，依時間排序。
+
+    F-B0053 系列（育樂預報）只提供檔案下載（fileapi），不在 datastore。
+    3 小時因子（天氣現象、降雨機率、綜合描述）有 StartTime/EndTime；
+    逐時因子（溫度、相對濕度）只有 DataTime，取時段起點那一筆。
+    """
     c = cfg["cwa"]
-    rec = _get(c["forecast_dataset"], key, LocationName=c["forecast_location"])
-    locs = rec.get("Locations") or rec.get("locations") or []
-    loc = None
-    for L in locs:
-        for x in L.get("Location") or L.get("location") or []:
-            if (x.get("LocationName") or x.get("locationName")) == c["forecast_location"]:
-                loc = x
+    r = requests.get(FILEAPI + c["forecast_dataset"],
+                     params={"Authorization": key, "downloadType": "WEB", "format": "JSON"}, timeout=60)
+    r.raise_for_status()
+    loc = _find_location(r.json(), c["forecast_location"])
     if loc is None:
         raise RuntimeError(f"location {c['forecast_location']} not in dataset {c['forecast_dataset']}")
 
     slots: dict[str, dict] = {}
+    hourly: dict[str, dict] = {}
     for we in loc.get("WeatherElement") or loc.get("weatherElement") or []:
         for t in we.get("Time") or we.get("time") or []:
+            ev = t.get("ElementValue") or t.get("elementValue") or {}
+            if isinstance(ev, list):
+                ev = {k: v for d in ev for k, v in d.items()}
             st = t.get("StartTime") or t.get("startTime")
             en = t.get("EndTime") or t.get("endTime")
-            if not st or not en:
-                continue
-            slot = slots.setdefault(st, {"start": st, "end": en})
-            for ev in t.get("ElementValue") or t.get("elementValue") or []:
-                slot.update(ev)
+            dt = t.get("DataTime") or t.get("dataTime")
+            if st and en:
+                slots.setdefault(st, {"start": st, "end": en}).update(ev)
+            elif dt:
+                hourly.setdefault(dt, {}).update(ev)
     out = []
     for st in sorted(slots):
-        s = slots[st]
+        s = {**hourly.get(st, {}), **slots[st]}
         out.append({
             "start": s["start"], "end": s["end"],
             "weather": s.get("Weather"),

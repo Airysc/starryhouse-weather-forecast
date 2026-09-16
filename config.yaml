@@ -37,9 +37,10 @@ scoring:
   ok_pop_max: 30
 
 cwa:
-  # 育樂天氣預報「農場」未來 3 天 3 小時預報的資料集代碼，
-  # 用 tools/find_cwa_dataset.py 跑一次找出來後填入
-  forecast_dataset: F-B0053-0XX
+  # 育樂天氣預報 未來 3 天逐 3 小時（fileapi 檔案型資料集，tools/find_cwa_dataset.py 已確認）：
+  #   F-B0053-017 農場   → 清境農場（約 1,750 m，距觀星園約 2 km）
+  #   F-B0053-071 觀星   → 鳶峰停車場（約 2,750 m，距觀星園約 8 km）
+  forecast_dataset: F-B0053-017
   forecast_location: 清境農場
   obs_dataset: O-A0001-001
   # 留空 = 自動取距離最近的自動氣象站
