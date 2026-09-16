@@ -15,7 +15,8 @@ def _channel_id(handle: str, key: str) -> str | None:
 
 
 def _match(title: str, keywords: list[str]) -> bool:
-    return any(k in title for k in keywords)
+    # 全部關鍵字都要出現：同一頻道常同時開多個直播（鳶峰、福壽山、金門…），用 any 會抓錯
+    return all(k in title for k in keywords)
 
 
 def find_live_api(handle: str, keywords: list[str], key: str, cache: dict) -> dict | None:

@@ -66,11 +66,12 @@ imagery:
       url: "https://www.cwa.gov.tw/Data/satellite/TWI_IR1_CR_800/TWI_IR1_CR_800-{ts_local_dash}.jpg"
       page: "https://www.cwa.gov.tw/V8/C/W/OBS_Sat.html"
 
+# keywords：直播標題必須「同時」包含所有關鍵字（頻道常同時開多個直播）
 streams:
   - name: 鳶峰全天域星空直播（臺北天文館）
     handle: TaipeiAstroMuseum
-    keywords: [鳶峰, 全天域]
+    keywords: [鳶峰]
     fallback_page: "https://tw.live/cam/?id=yfxkzb"
   - name: 清境觀星園直播（親子觀星會）
     handle: familystar123
-    keywords: [清境, 觀星園]
+    keywords: [清境]
