@@ -1,0 +1,15 @@
+name: tools
+on:
+  workflow_dispatch:
+    inputs:
+      tool: { type: choice, options: [find_cwa_dataset, probe_images], default: find_cwa_dataset }
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install -q -r requirements.txt
+      - env: { CWA_API_KEY: "${{ secrets.CWA_API_KEY }}" }
+        run: python tools/${{ github.event.inputs.tool }}.py
