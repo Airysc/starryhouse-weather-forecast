@@ -1,0 +1,76 @@
+# StarryHouse Weather Forecast 設定檔
+location:
+  name: 清境觀星園
+  latitude: 24.076361111
+  longitude: 121.17122222
+  elevation_m: 2087
+  timezone: Asia/Taipei
+
+# 網頁（GitHub Pages，由 Actions 每 10 分鐘重建並部署）
+site:
+  # 啟用 Pages 後填入實際網址；用來在啟動時讀上一次的 latest.json（直播 ID 快取）
+  url: "https://angelwenhsin.github.io/starryhouse-weather-forecast/"
+  # 7Timer! ASTRO 圖片（直接由瀏覽器載入）
+  seven_timer: "https://www.7timer.info/bin/astro.php?lon={lon}&lat={lat}&lang=zh-TW&ac=0&unit=metric&tzshift=8"
+  # 頁尾連結
+  links:
+    - label: 氣象署 清境農場 預報
+      url: "https://www.cwa.gov.tw/V8/C/L/Farm/Farm.html?QS=&PID=E011"
+    - label: 氣象署 觀星 專區
+      url: "https://www.cwa.gov.tw/V8/C/L/StarView/StarView.html"
+    - label: 氣象署 雷達回波
+      url: "https://www.cwa.gov.tw/V8/C/W/OBS_Radar.html"
+    - label: 氣象署 衛星雲圖
+      url: "https://www.cwa.gov.tw/V8/C/W/OBS_Sat.html"
+
+# 觀測窗口（當地時間），跨日
+window:
+  start_hour: 18
+  end_hour: 9
+
+# 判斷門檻（以氣象署 天氣現象 + 3 小時降雨機率 為主）
+scoring:
+  good_weather_keywords: [晴, 多雲時晴]      # 天氣現象包含這些字視為「適合」
+  ok_weather_keywords: [多雲]                # 視為「勉強」
+  bad_weather_keywords: [陰, 雨, 霧, 雷]     # 視為「不適合」
+  good_pop_max: 20
+  ok_pop_max: 30
+
+cwa:
+  # 育樂天氣預報「農場」未來 3 天 3 小時預報的資料集代碼，
+  # 用 tools/find_cwa_dataset.py 跑一次找出來後填入
+  forecast_dataset: F-B0053-0XX
+  forecast_location: 清境農場
+  obs_dataset: O-A0001-001
+  # 留空 = 自動取距離最近的自動氣象站
+  obs_station_name: ""
+
+imagery:
+  # 每張圖每 10 分鐘一幀；動畫涵蓋前幾小時
+  hours_back: 3
+  step_min: 10
+  gif_frame_ms: 250
+  # 網址格式已用 tools/probe_images.py 驗證（2026-09-16）：雷達為 png、衛星為 jpg，時間戳皆為台灣時間
+  products:
+    radar:
+      label: 雷達回波
+      url: "https://www.cwa.gov.tw/Data/radar/CV1_3600_{ts_local_compact}.png"
+      page: "https://www.cwa.gov.tw/V8/C/W/OBS_Radar.html"
+    sat_vis:
+      label: 衛星雲圖（真實色）
+      url: "https://www.cwa.gov.tw/Data/satellite/TWI_TRGB_1350/TWI_TRGB_1350-{ts_local_dash}.jpg"
+      page: "https://www.cwa.gov.tw/V8/C/W/OBS_Sat.html"
+      daylight_only: true
+    sat_ir:
+      label: 衛星雲圖（紅外線色調強化）
+      url: "https://www.cwa.gov.tw/Data/satellite/TWI_IR1_CR_800/TWI_IR1_CR_800-{ts_local_dash}.jpg"
+      page: "https://www.cwa.gov.tw/V8/C/W/OBS_Sat.html"
+
+streams:
+  - name: 鳶峰全天域星空直播（臺北天文館）
+    handle: TaipeiAstroMuseum
+    keywords: [鳶峰, 全天域]
+    fallback_page: "https://tw.live/cam/?id=yfxkzb"
+  - name: 清境觀星園直播（親子觀星會）
+    handle: familystar123
+    keywords: [清境, 觀星園]

@@ -1,0 +1,317 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>StarryHouse Weather Forecast｜清境觀星園今晚觀測天氣</title>
+<meta name="description" content="清境觀星園每日傍晚更新：整晚 3 小時預報、即時觀測、雷達與衛星雲圖動畫、鳶峰與觀星園即時影像。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/suncalc/1.9.0/suncalc.min.js"></script>
+<style>
+  :root {
+    --night: #101a33;
+    --dusk: #1a2747;
+    --ink: #e9edf5;
+    --muted: #9aa6c2;
+    --line: #2b3a5f;
+    --good: #8fd3a6;
+    --ok: #f0c36a;
+    --bad: #ee7f7b;
+    --none: #3d4a6b;
+    --horizon: #f2a25c;
+  }
+  * { box-sizing: border-box; }
+  html { background: var(--night); color: var(--ink); font-family: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif; font-size: 16px; line-height: 1.6; }
+  body { margin: 0; padding: 0 20px 64px; }
+  main { max-width: 680px; margin: 0 auto; }
+  a { color: var(--ink); text-decoration-color: var(--muted); text-underline-offset: 3px; }
+  a:hover { text-decoration-color: var(--ink); }
+  header { padding: 40px 0 8px; }
+  header .site { font-size: .95rem; color: var(--muted); margin: 0; }
+  header .meta { font-size: .9rem; color: var(--muted); margin: 4px 0 0; }
+
+
+  section { border-top: 1px solid var(--line); padding: 24px 0 8px; }
+  h2 { font-size: 1.05rem; font-weight: 500; margin: 0 0 14px; }
+  h2 small { color: var(--muted); font-weight: 400; margin-left: 8px; font-size: .85rem; }
+  table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+  td, th { padding: 8px 6px; text-align: left; vertical-align: top; border-bottom: 1px dashed var(--line); font-weight: 400; }
+  th { color: var(--muted); font-size: .85rem; }
+  td.lvl { width: 5.5em; white-space: nowrap; }
+  .dot { display: inline-block; width: .7em; height: .7em; border-radius: 50%; margin-right: .45em; background: var(--none); vertical-align: -.05em; }
+  .dot.good { background: var(--good); } .dot.ok { background: var(--ok); } .dot.bad { background: var(--bad); }
+  td.num { color: var(--muted); }
+  .obs { margin: 0; }
+  .obs .big { font-size: 1.4rem; font-weight: 300; margin-right: 12px; }
+  .obs .k { color: var(--muted); margin-right: 14px; white-space: nowrap; }
+
+  figure { margin: 0 0 28px; }
+  figure img { display: block; width: 100%; height: auto; border-radius: 6px; background: var(--dusk); }
+  figcaption { display: flex; flex-wrap: wrap; gap: 6px 18px; align-items: baseline; font-size: .9rem; color: var(--muted); margin-top: 8px; }
+  figcaption strong { color: var(--ink); font-weight: 500; }
+  button.toggle { font: inherit; font-size: .85rem; color: var(--ink); background: var(--dusk); border: 1px solid var(--line); border-radius: 999px; padding: 4px 14px; cursor: pointer; }
+  button.toggle:hover, button.toggle:focus-visible { border-color: var(--muted); outline: none; }
+  button.toggle[aria-pressed="true"] { background: var(--ink); color: var(--night); }
+
+  .stream { margin: 0 0 24px; }
+  .stream .frame { position: relative; aspect-ratio: 16/9; background: var(--dusk); border-radius: 6px; overflow: hidden; }
+  .stream iframe, .stream img { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; object-fit: cover; }
+  .stream .off { position: absolute; inset: 0; display: grid; place-items: center; color: var(--muted); }
+  .stream .cap { margin-top: 8px; font-size: .9rem; color: var(--muted); }
+  .stream .cap strong { color: var(--ink); font-weight: 500; }
+  .live { color: var(--bad); font-weight: 500; }
+
+  .astro { display: grid; grid-template-columns: 1fr 1fr; gap: 0 28px; }
+  .astro table { margin-bottom: 8px; }
+  .astro td:last-child { text-align: right; white-space: nowrap; }
+  .astro .moon { display: flex; align-items: center; gap: 14px; margin: 6px 0 14px; }
+  .astro .moon svg { width: 44px; height: 44px; flex: none; }
+  .astro .moon p { margin: 0; line-height: 1.45; }
+  .astro .moon small { color: var(--muted); }
+  .datepick { display: flex; align-items: center; gap: 10px; margin: 0 0 14px; font-size: .9rem; color: var(--muted); }
+  .datepick input { font: inherit; color: var(--ink); background: var(--dusk); border: 1px solid var(--line); border-radius: 6px; padding: 4px 8px; color-scheme: dark; }
+  .datepick button { font: inherit; font-size: .85rem; color: var(--ink); background: transparent; border: 1px solid var(--line); border-radius: 999px; padding: 2px 12px; cursor: pointer; }
+  .seven img { width: 100%; height: auto; border-radius: 6px; background: #fff; }
+  .links { display: flex; flex-wrap: wrap; gap: 8px 20px; margin: 0 0 12px; padding: 0; list-style: none; }
+  @media (max-width: 520px) { .astro { grid-template-columns: 1fr; } }
+  footer { border-top: 1px solid var(--line); margin-top: 24px; padding-top: 20px; color: var(--muted); font-size: .85rem; }
+  footer p { margin: 0 0 10px; }
+  .empty { color: var(--muted); }
+  :focus-visible { outline: 2px solid var(--ok); outline-offset: 2px; }
+  @media (prefers-reduced-motion: no-preference) { button.toggle { transition: background .15s, color .15s; } }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <p class="site" id="siteName">清境觀星園</p>
+    <p class="meta" id="meta">載入中…</p>
+  </header>
+
+  <section>
+    <h2>即時觀測<small id="obsMeta"></small></h2>
+    <p class="obs" id="obs"></p>
+  </section>
+
+  <section>
+    <h2>整晚 3 小時預報<small>氣象署清境農場・低雲量為 Open-Meteo</small></h2>
+    <table id="slots">
+      <thead><tr><th>時段</th><th>判斷</th><th>天氣</th><th class="num">降雨</th><th class="num">低雲</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </section>
+
+  <section class="astro-sec">
+    <h2>天文時刻<small>依觀星園座標即時計算，台灣時間</small></h2>
+    <div class="datepick">
+      <label for="date">日期</label><input type="date" id="date">
+      <button type="button" id="today">今天</button>
+    </div>
+    <div class="astro">
+      <div>
+        <table id="sunTable">
+          <tr><td>日落</td><td id="t_sunset"></td></tr>
+          <tr><td>民用曙暮光結束</td><td id="t_dusk"></td></tr>
+          <tr><td>航海曙暮光結束</td><td id="t_ndusk"></td></tr>
+          <tr><td>天文曙暮光結束</td><td id="t_adusk"></td></tr>
+          <tr><td>天文曙暮光開始</td><td id="t_adawn"></td></tr>
+          <tr><td>航海曙暮光開始</td><td id="t_ndawn"></td></tr>
+          <tr><td>民用曙暮光開始</td><td id="t_dawn"></td></tr>
+          <tr><td>日出</td><td id="t_sunrise"></td></tr>
+        </table>
+      </div>
+      <div>
+        <div class="moon"><svg id="moonSvg" viewBox="0 0 44 44" aria-hidden="true"></svg><p id="moonText"></p></div>
+        <table id="moonTable">
+          <tr><td>月出</td><td id="t_moonrise"></td></tr>
+          <tr><td>月落</td><td id="t_moonset"></td></tr>
+          <tr><td>照明度</td><td id="t_illum"></td></tr>
+          <tr><td>月齡</td><td id="t_age"></td></tr>
+        </table>
+        <p id="darkText" class="empty" style="margin:0;font-size:.9rem"></p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>即時影像</h2>
+    <div id="streams"></div>
+  </section>
+
+  <section>
+    <h2>雷達回波<small id="radarMeta"></small></h2>
+    <div id="img_radar"></div>
+  </section>
+
+  <section>
+    <h2>衛星雲圖<small id="satMeta"></small></h2>
+    <div id="img_sat"></div>
+  </section>
+
+  <section class="seven">
+    <h2>72 小時天文氣象預報<small>7Timer! ASTRO・雲量／視寧度／透明度</small></h2>
+    <a id="sevenLink" target="_blank" rel="noopener"><img id="sevenImg" alt="7Timer ASTRO 預報圖" loading="lazy"></a>
+  </section>
+
+  <footer>
+    <ul class="links" id="links"></ul>
+    <p>資料來源：中央氣象署開放資料與官網圖資、Open-Meteo、7Timer!、臺北天文館與親子觀星會 YouTube 直播。判斷規則以氣象署「天氣現象」與「3 小時降雨機率」為主。</p>
+    <p>鳶峰海拔約 2,750 m，常位於雲海之上；鳶峰晴朗不代表觀星園（約 2,090 m）晴朗，反之則多半準確。出發前請以即時影像為準。</p>
+    <p>每 10 分鐘更新一次。<a href="data/latest.json">原始資料</a></p>
+  </footer>
+</main>
+
+<script>
+(async function () {
+  const $ = (id) => document.getElementById(id);
+  const LABEL = { good: "適合", ok: "勉強", bad: "不適合", "?": "無資料" };
+  const hm = (iso) => iso ? iso.slice(11, 16) : "–";
+  const md = (iso) => iso ? `${+iso.slice(5, 7)}/${+iso.slice(8, 10)}` : "";
+  const fmt = (d) => (d instanceof Date && !isNaN(d)) ? d.toLocaleTimeString("zh-TW", { hour: "2-digit", minute: "2-digit", hour12: false, timeZone: "Asia/Taipei" }) : "—";
+
+  let d;
+  try {
+    const r = await fetch("data/latest.json", { cache: "no-store" });
+    if (!r.ok) throw new Error(r.status);
+    d = await r.json();
+  } catch (e) {
+    $("meta").textContent = "還沒有資料。第一次排程執行後這裡會出現內容；天文時刻仍可查看。";
+    d = { location: { lat: 24.076361, lon: 121.171222 }, slots: [], images: {}, streams: [], links: [] };
+  }
+
+  if (d.site_name) $("siteName").textContent = d.site_name;
+  if (d.generated_at) $("meta").textContent = `${md(d.generated_at)} ${hm(d.generated_at)} 更新・每 10 分鐘刷新`;
+
+  // 即時觀測
+  const o = d.obs;
+  if (o) {
+    $("obsMeta").textContent = `${o.station}站・距 ${o.dist_km} km・${hm(o.time)}`;
+    const rain = (o.rain_now && o.rain_now !== "-" && +o.rain_now > 0) ? `<span class="k">時雨量 ${o.rain_now} mm</span>` : "";
+    $("obs").innerHTML = `<span class="big">${o.temp ?? "–"}°C</span><span class="k">${o.weather ?? ""}</span><span class="k">濕度 ${o.rh ?? "–"}%</span><span class="k">風 ${o.wind ?? "–"} m/s</span>${rain}`;
+  } else {
+    $("obs").innerHTML = `<span class="empty">取得失敗</span>`;
+  }
+
+  // 預報表
+  const tb = $("slots").querySelector("tbody");
+  if (!d.slots || !d.slots.length) {
+    tb.innerHTML = `<tr><td colspan="5" class="empty">預報取得失敗，請到氣象署官網查看清境農場。</td></tr>`;
+  } else for (const s of d.slots) {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `<td>${s.start}–${s.end}</td><td class="lvl"><i class="dot ${s.level}"></i>${LABEL[s.level]}</td>` +
+      `<td>${s.weather ?? "–"}</td><td class="num">${s.pop ?? "–"}${s.pop != null ? "%" : ""}</td><td class="num">${s.low_cloud ?? "–"}${s.low_cloud != null ? "%" : ""}</td>`;
+    tb.appendChild(tr);
+  }
+
+  // 天文時刻（瀏覽器端計算）
+  const LAT = d.location.lat, LON = d.location.lon;
+  const PHASE_NAME = (p) => p < .03 || p > .97 ? "新月" : p < .22 ? "眉月" : p < .28 ? "上弦月" : p < .47 ? "盈凸月" : p < .53 ? "滿月" : p < .72 ? "虧凸月" : p < .78 ? "下弦月" : "殘月";
+  function moonSvg(fraction, phase) {
+    // 右側受光為盈（phase<0.5），左側受光為虧
+    const r = 20, cx = 22, cy = 22, waxing = phase < .5;
+    const k = 2 * fraction - 1;                     // -1..1：明暗界線的水平位置
+    const sweepLit = waxing ? 1 : 0;
+    const x = k * r;                                 // 界線橢圓半寬
+    const terminator = `A ${Math.abs(x)} ${r} 0 0 ${k > 0 ? (waxing ? 1 : 0) : (waxing ? 0 : 1)} ${cx} ${cy + r}`;
+    const outer = `A ${r} ${r} 0 0 ${sweepLit} ${cx} ${cy - r}`;
+    return `<circle cx="${cx}" cy="${cy}" r="${r}" fill="var(--dusk)" stroke="var(--line)"/>` +
+           `<path d="M ${cx} ${cy - r} ${terminator} ${outer} Z" fill="var(--ink)"/>`;
+  }
+  function renderAstro(dateStr) {
+    const [y, m, dd] = dateStr.split("-").map(Number);
+    const noon = new Date(Date.UTC(y, m - 1, dd, 4, 0));               // 台灣中午 12:00 = UTC 04:00
+    const nextNoon = new Date(noon.getTime() + 86400000);
+    const t = SunCalc.getTimes(noon, LAT, LON), n = SunCalc.getTimes(nextNoon, LAT, LON);
+    $("t_sunset").textContent = fmt(t.sunset);   $("t_dusk").textContent = fmt(t.dusk);
+    $("t_ndusk").textContent = fmt(t.nauticalDusk); $("t_adusk").textContent = fmt(t.night);
+    $("t_adawn").textContent = fmt(n.nightEnd);  $("t_ndawn").textContent = fmt(n.nauticalDawn);
+    $("t_dawn").textContent = fmt(n.dawn);       $("t_sunrise").textContent = fmt(n.sunrise);
+    // 月出月落：找從當天中午起 24 小時內的事件
+    const mt = SunCalc.getMoonTimes(noon, LAT, LON, true), mt2 = SunCalc.getMoonTimes(nextNoon, LAT, LON, true);
+    const pick = (a, b) => (a && a >= noon && a < nextNoon) ? a : (b && b >= noon && b < nextNoon) ? b : null;
+    const rise = pick(mt.rise, mt2.rise), set = pick(mt.set, mt2.set);
+    $("t_moonrise").textContent = rise ? fmt(rise) + (rise.getTime() - noon.getTime() > 43200000 ? "（翌日）" : "") : (mt.alwaysUp ? "整日在地平線上" : "此夜無月出");
+    $("t_moonset").textContent = set ? fmt(set) + (set.getTime() - noon.getTime() > 43200000 ? "（翌日）" : "") : (mt.alwaysDown ? "整日在地平線下" : "此夜無月落");
+    const mid = new Date(noon.getTime() + 43200000);                   // 當夜 00:00
+    const ill = SunCalc.getMoonIllumination(mid);
+    $("t_illum").textContent = Math.round(ill.fraction * 100) + "%";
+    $("t_age").textContent = (ill.phase * 29.53).toFixed(1) + " 天";
+    $("moonSvg").innerHTML = moonSvg(ill.fraction, ill.phase);
+    $("moonText").innerHTML = `${PHASE_NAME(ill.phase)}<br><small>午夜照明度 ${Math.round(ill.fraction * 100)}%</small>`;
+    // 無月暗夜：天文曙暮光結束後到開始前，且月亮在地平線下的區段
+    let dark = "";
+    if (t.night && n.nightEnd) {
+      const nightStart = t.night, nightEnd = n.nightEnd;
+      const moonUp = (x) => SunCalc.getMoonPosition(x, LAT, LON).altitude > 0;
+      let seg = [], cur = null;
+      for (let x = nightStart.getTime(); x <= nightEnd.getTime(); x += 600000) {
+        const up = moonUp(new Date(x));
+        if (!up && cur === null) cur = x;
+        if (up && cur !== null) { seg.push([cur, x]); cur = null; }
+      }
+      if (cur !== null) seg.push([cur, nightEnd.getTime()]);
+      seg = seg.filter(([a, b]) => b - a >= 1800000);
+      dark = seg.length ? "無月暗夜：" + seg.map(([a, b]) => `${fmt(new Date(a))}–${fmt(new Date(b))}`).join("、") : "此夜整段天文夜均有月光";
+    }
+    $("darkText").textContent = dark;
+  }
+  const todayTW = new Date().toLocaleDateString("sv-SE", { timeZone: "Asia/Taipei" });
+  $("date").value = todayTW;
+  renderAstro(todayTW);
+  $("date").addEventListener("change", (e) => e.target.value && renderAstro(e.target.value));
+  $("today").addEventListener("click", () => { $("date").value = todayTW; renderAstro(todayTW); });
+
+  // 直播
+  const sts = $("streams");
+  if (!d.streams || !d.streams.length) sts.innerHTML = `<p class="empty">尚無資料</p>`;
+  for (const s of d.streams || []) {
+    const el = document.createElement("div");
+    el.className = "stream";
+    if (s.live && s.video_id) {
+      el.innerHTML = `<div class="frame"><iframe src="https://www.youtube.com/embed/${s.video_id}?autoplay=0" title="${s.name}" allow="picture-in-picture" allowfullscreen loading="lazy"></iframe></div>` +
+        `<p class="cap"><span class="live">直播中</span>　<strong>${s.name}</strong>${s.title ? `<br>${s.title}` : ""}　<a href="https://www.youtube.com/watch?v=${s.video_id}" target="_blank" rel="noopener">在 YouTube 開啟</a></p>`;
+    } else {
+      el.innerHTML = `<div class="frame"><div class="off">目前未開播</div></div><p class="cap"><strong>${s.name}</strong>　目前未開播${s.handle ? `　<a href="https://www.youtube.com/@${s.handle}/streams" target="_blank" rel="noopener">頻道</a>` : ""}</p>`;
+    }
+    sts.appendChild(el);
+  }
+
+  // 雷達 / 衛星
+  function figure(im) {
+    const fig = document.createElement("figure");
+    if (!im || !im.latest) {
+      fig.innerHTML = `<figcaption><span class="empty">取得失敗</span>${im && im.page ? `<a href="${im.page}" target="_blank" rel="noopener">官網</a>` : ""}</figcaption>`;
+      return fig;
+    }
+    const bust = d.generated_at ? "?v=" + encodeURIComponent(d.generated_at) : "";
+    const img = document.createElement("img");
+    img.src = im.latest + bust; img.alt = im.label; img.loading = "lazy";
+    fig.appendChild(img);
+    const cap = document.createElement("figcaption");
+    cap.innerHTML = `<strong>${im.label}</strong><span>${hm(im.latest_time)}</span>`;
+    if (im.gif) {
+      const b = document.createElement("button");
+      b.className = "toggle"; b.type = "button"; b.setAttribute("aria-pressed", "false");
+      const lbl = `前 3 小時動畫（${im.n_frames} 幀）`;
+      b.textContent = lbl;
+      b.onclick = () => { const on = b.getAttribute("aria-pressed") !== "true"; b.setAttribute("aria-pressed", on); img.src = (on ? im.gif : im.latest) + bust; b.textContent = on ? "停止" : lbl; };
+      cap.appendChild(b);
+    }
+    if (im.page) { const a = document.createElement("a"); a.href = im.page; a.target = "_blank"; a.rel = "noopener"; a.textContent = "官網"; cap.appendChild(a); }
+    fig.appendChild(cap);
+    return fig;
+  }
+  const radar = d.images.radar; $("img_radar").appendChild(figure(radar)); if (radar && radar.latest_time) $("radarMeta").textContent = hm(radar.latest_time);
+  const sat = d.images.sat_vis || d.images.sat_ir; $("img_sat").appendChild(figure(sat)); if (sat && sat.latest_time) $("satMeta").textContent = `${sat.label.replace("衛星雲圖", "").replace(/[（）]/g, "")}・${hm(sat.latest_time)}`;
+
+  // 7Timer
+  if (d.seven_timer) { $("sevenImg").src = d.seven_timer + "&_=" + Date.now(); $("sevenLink").href = d.seven_timer; }
+  else document.querySelector(".seven").hidden = true;
+
+  // 頁尾連結
+  for (const l of d.links || []) { const li = document.createElement("li"); li.innerHTML = `<a href="${l.url}" target="_blank" rel="noopener">${l.label}</a>`; $("links").appendChild(li); }
+})();
+</script>
+</body>
+</html>
