@@ -2,7 +2,8 @@ name: tools
 on:
   workflow_dispatch:
     inputs:
-      tool: { type: choice, options: [find_cwa_dataset, probe_images], default: find_cwa_dataset }
+      tool: { type: string, default: find_cwa_dataset, description: "tools/ 下的檔名（不含 .py）" }
+      args: { type: string, default: "", description: "命令列參數" }
 jobs:
   run:
     runs-on: ubuntu-latest
@@ -12,4 +13,4 @@ jobs:
         with: { python-version: "3.12" }
       - run: pip install -q -r requirements.txt
       - env: { CWA_API_KEY: "${{ secrets.CWA_API_KEY }}" }
-        run: python tools/${{ github.event.inputs.tool }}.py
+        run: python tools/${{ github.event.inputs.tool }}.py ${{ github.event.inputs.args }}

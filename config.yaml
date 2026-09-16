@@ -9,7 +9,7 @@ location:
 # 網頁（GitHub Pages，由 Actions 每 10 分鐘重建並部署）
 site:
   # 啟用 Pages 後填入實際網址；用來在啟動時讀上一次的 latest.json（直播 ID 快取）
-  url: "https://angelwenhsin.github.io/starryhouse-weather-forecast/"
+  url: "https://airysc.github.io/starryhouse-weather-forecast/"
   # 7Timer! ASTRO 圖片（直接由瀏覽器載入）
   seven_timer: "https://www.7timer.info/bin/astro.php?lon={lon}&lat={lat}&lang=zh-TW&ac=0&unit=metric&tzshift=8"
   # 頁尾連結
