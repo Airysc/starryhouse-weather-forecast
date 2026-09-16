@@ -1,50 +1,58 @@
 """跑一次，找出哪一個 F-B0053 資料集含有「清境農場」的 3 小時預報。
 用法：CWA_API_KEY=xxx python tools/find_cwa_dataset.py [地點名稱]
-先用 F-C0032-001 驗證金鑰，再逐一列出每個資料集的地點名稱（不要求完全相符，方便找出實際名稱）。
+先用 F-C0032-001 驗證金鑰；再對 F-B0053-001~100 同時試 datastore 與 fileapi 兩種端點，列出地點名稱。
 """
 import os, sys, requests
 
-BASE = "https://opendata.cwa.gov.tw/api/v1/rest/datastore/"
+DATASTORE = "https://opendata.cwa.gov.tw/api/v1/rest/datastore/"
+FILEAPI = "https://opendata.cwa.gov.tw/fileapi/v1/opendataapi/"
 key = os.environ["CWA_API_KEY"]
 name = sys.argv[1] if len(sys.argv) > 1 else "清境農場"
-needles = [name] + [name[:2]]  # 例如「清境農場」與「清境」
+needles = [name, name[:2]]
 
 
-def get(ds, **params):
-    params.update(Authorization=key, format="JSON")
-    r = requests.get(BASE + ds, params=params, timeout=30)
+def jget(url, **params):
+    r = requests.get(url, params=params, timeout=60)
     try:
         return r.status_code, r.json()
     except ValueError:
-        return r.status_code, {"raw": r.text[:200]}
+        return r.status_code, {"raw": r.text[:120].replace("\n", " ")}
 
 
-# 0. 驗證金鑰
-code, js = get("F-C0032-001", locationName="南投縣")
-print(f"key check (F-C0032-001): HTTP {code}, success={js.get('success')}, msg={js.get('message') or js.get('result', {}).get('message') or js.get('raw', '')}")
+def walk_names(obj, out):
+    """遞迴找所有 LocationName / locationName"""
+    if isinstance(obj, dict):
+        for k, v in obj.items():
+            if k in ("LocationName", "locationName") and isinstance(v, str):
+                out.append(v)
+            else:
+                walk_names(v, out)
+    elif isinstance(obj, list):
+        for v in obj:
+            walk_names(v, out)
+
+
+code, js = jget(DATASTORE + "F-C0032-001", Authorization=key, format="JSON", locationName="南投縣")
+print(f"key check: HTTP {code} success={js.get('success')}")
 if js.get("success") not in (True, "true"):
-    print("→ 金鑰無效或未生效，請確認 Secret 值（授權碼）")
-    sys.exit(1)
+    print("→ 金鑰無效", js); sys.exit(1)
 
-# 1. 掃描 F-B0053 系列
-for n in range(1, 100):
+shown_msg = 0
+for n in range(1, 101):
     ds = f"F-B0053-{n:03d}"
-    code, js = get(ds)
-    if js.get("success") not in (True, "true"):
+    c1, j1 = jget(DATASTORE + ds, Authorization=key, format="JSON")
+    ok1 = j1.get("success") in (True, "true")
+    if not ok1 and shown_msg < 3:
+        print(f"{ds} datastore HTTP {c1}: {str(j1)[:160]}"); shown_msg += 1
+    c2, j2 = jget(FILEAPI + ds, Authorization=key, downloadType="WEB", format="JSON")
+    ok2 = c2 == 200 and "raw" not in j2
+    if not ok1 and not ok2:
+        if n <= 3:
+            print(f"{ds} fileapi HTTP {c2}: {str(j2)[:160]}")
         continue
-    locs = js.get("records", {}).get("Locations") or []
-    for L in locs:
-        items = L.get("Location") or []
-        names = [x.get("LocationName") for x in items]
-        hits = [x for x in items if any(k in (x.get("LocationName") or "") for k in needles)]
-        line = f"{ds}: {L.get('LocationsName')}  地點數={len(names)}"
-        if hits:
-            x = hits[0]
-            wes = x.get("WeatherElement") or []
-            times = (wes[0].get("Time") or []) if wes else []
-            span = f"{times[0].get('StartTime', '')} ~ {times[0].get('EndTime', '')}" if times else ""
-            line += f"  ★ 符合={[h.get('LocationName') for h in hits]}  筆數={len(times)}  第一筆={span}  因子={[w.get('ElementName') for w in wes]}"
-        else:
-            line += f"  地點例={names[:6]}"
-        print(line)
-print("done — 選「★ 且筆數約 24、時距 3 小時、因子含 Weather 與 ProbabilityOfPrecipitation」的那個填入 config.yaml（forecast_location 也要改成實際名稱）")
+    names = []
+    walk_names(j1 if ok1 else j2, names)
+    hits = [x for x in names if any(k in x for k in needles)]
+    src = "datastore" if ok1 else "fileapi"
+    print(f"{ds} [{src}] 地點數={len(names)} 例={names[:5]}" + (f"  ★ 符合={hits}" if hits else ""))
+print("done")
