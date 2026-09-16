@@ -19,7 +19,7 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 12
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -27,15 +27,6 @@ jobs:
           python-version: "3.12"
           cache: pip
       - run: pip install -q -r requirements.txt
-      - name: Cache Playwright browsers
-        id: pw-cache
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/ms-playwright
-          key: playwright-${{ runner.os }}-${{ hashFiles('requirements.txt') }}
-      - name: Install Chromium (meteoblue screenshot)
-        run: |
-          if [ "${{ steps.pw-cache.outputs.cache-hit }}" = "true" ]; then playwright install-deps chromium; else playwright install --with-deps chromium; fi
       - name: Build site
         env:
           CWA_API_KEY: ${{ secrets.CWA_API_KEY }}

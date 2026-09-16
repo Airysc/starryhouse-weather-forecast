@@ -10,14 +10,7 @@ location:
 site:
   # 啟用 Pages 後填入實際網址；用來在啟動時讀上一次的 latest.json（直播 ID 快取）
   url: "https://airysc.github.io/starryhouse-weather-forecast/"
-  # meteoblue 免費 widget：build 時用無頭 Chromium 截圖存成 img/meteoblue.webp；截不到時網頁退回 iframe
-  meteoblue:
-    widget_url: "https://www.meteoblue.com/en/weather/widget/meteogram/24.076N121.171E2072_Asia%2FTaipei?geoloc=fixed&temperature_units=CELSIUS&windspeed_units=METER_PER_SECOND&precipitation_units=MILLIMETER&forecast_days=5&layout=dark&autowidth=auto&user_key=390e0305437716ff&embed_key=f81edba36614bb7c&sig=7b9048c51cb706256d6cdfc48668815c197ea5dfafdea459e2f8fb187d72f362"
-    link: "https://www.meteoblue.com/en/weather/week/index"
-    width: 1100
-    height: 400
-    scale: 1.5
-    quality: 82
+  # meteoblue 免費 widget 以 iframe 直接寫在 site/index.html（需保留連回 meteoblue 的連結）
   # 頁尾連結
   links:
     - label: 氣象署 清境農場 預報

@@ -10,7 +10,7 @@ from datetime import datetime, timedelta
 
 import requests
 
-from . import cwa, openmeteo, imagery, youtube, site, seventimer, meteoblue
+from . import cwa, openmeteo, imagery, youtube, site, seventimer
 from .config import load_config, secret
 from .scoring import Slot, classify, summarize
 from .sun import now_local, sun_times
@@ -133,13 +133,6 @@ def collect(cfg: dict) -> dict:
     except Exception as e:
         log("imagery failed:", e)
 
-    mb_img = None
-    try:
-        mb_img = meteoblue.screenshot(cfg)
-        log("meteoblue screenshot:", "ok" if mb_img else "none")
-    except Exception as e:
-        log("meteoblue screenshot failed:", e)
-
     prev = previous_state(cfg)
     streams = []
     for sc in cfg.get("streams", []):
@@ -154,7 +147,7 @@ def collect(cfg: dict) -> dict:
 
     return {"cfg": cfg, "now": now, "sun": sun, "slots": slots, "summary": summarize(slots),
             "forecast24": forecast24, "clouds": cloud_rows, "astro7": astro7,
-            "obs": obs, "images": images, "streams": streams, "meteoblue_img": mb_img}
+            "obs": obs, "images": images, "streams": streams}
 
 
 def main():

@@ -28,11 +28,6 @@ def write(ctx: dict) -> dict:
             e["frames"].append({"src": name, "time": t.isoformat(timespec="minutes")})
         images[key] = e
 
-    mb = ctx["cfg"]["site"].get("meteoblue") or {}
-    meteoblue = {"image": None, "widget_url": mb.get("widget_url"), "link": mb.get("link")}
-    if ctx.get("meteoblue_img"):
-        (BUILD / "img" / "meteoblue.webp").write_bytes(ctx["meteoblue_img"]); meteoblue["image"] = "img/meteoblue.webp"
-
     streams = []
     for s in ctx["streams"]:
         v = s.get("video")
@@ -55,7 +50,6 @@ def write(ctx: dict) -> dict:
         "obs": ctx["obs"],
         "images": images,
         "streams": streams,
-        "meteoblue": meteoblue,
         "frame_ms": ctx["cfg"]["imagery"]["frame_ms"],
         "links": ctx["cfg"]["site"].get("links", []),
     }

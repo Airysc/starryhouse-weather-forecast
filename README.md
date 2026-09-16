@@ -8,7 +8,7 @@
 4. 天文時刻（日落／日出、天文曙暮光、月光與無月時段時間軸、月相；瀏覽器端計算，可選日期）
 5. 雲量與視寧度預報（Open-Meteo 逐時高／中／低雲量與降雨率、7Timer! 視寧度與透明度，48 小時）
 6. 雷達回波、衛星雲圖（最新 + 前 3 小時動畫）
-7. 氣象圖（meteoblue 5 日 widget；build 時截圖存成 WebP，失敗則嵌 iframe）
+7. 氣象圖（meteoblue 5 日 widget，iframe 嵌入）
 
 `data/latest.json` 同時提供給通知系統（另一個 repo）讀取。
 
@@ -24,7 +24,6 @@ app/                 收集資料並產生 build/
   seventimer.py      7Timer! 視寧度／透明度
   scoring.py         時段分級與一句話結論（供通知使用）
   imagery.py         雷達／衛星抓圖，縮圖轉 WebP + 動畫幀
-  meteoblue.py       meteoblue widget 無頭瀏覽器截圖
   youtube.py         直播偵測（Data API → yt-dlp → 備援頁）
   site.py            組 build/
 tools/               一次性工具：找資料集代碼、驗證圖片網址
