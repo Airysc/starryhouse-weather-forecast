@@ -11,9 +11,9 @@ python3 -m py_compile app/*.py tools/*.py
 
 ## 1. 建立公開 repo 並推送
 ```bash
-OWNER=$(gh api user -q .login)
+OWNER=$(gh api user -q .login)   # 放 organization 則改成 org 名稱，Pages 網址會是 https://<org 小寫>.github.io/
 gh repo create starryhouse-weather-forecast --public --description "清境觀星園觀測天氣網頁"
-sed -i "s#https://OWNER.github.io/#https://${OWNER}.github.io/#" config.yaml
+sed -i '' "s#https://OWNER.github.io/#https://${OWNER}.github.io/#" config.yaml   # macOS；Linux 去掉 ''
 git init -b main && git add -A && git commit -m "init StarryHouse Weather Forecast"
 git remote add origin "https://github.com/${OWNER}/starryhouse-weather-forecast.git"
 git push -u origin main
@@ -35,38 +35,17 @@ Claude Code 在此停下，請使用者自行到 repo → Settings → Secrets a
 
 使用者回覆「已設定」後，Claude Code 只檢查名稱：`gh secret list -R "${OWNER}/starryhouse-weather-forecast"`
 
-## 4. 找出氣象署資料集代碼、驗證圖片網址
-兩支工具需要金鑰，改在 Actions 執行。先臨時加一個 workflow：
+## 4. 資料集代碼與圖片網址（已完成，僅供日後參考）
+- 育樂預報 F-B0053 系列只提供檔案下載（fileapi），datastore 端點一律 404。`config.yaml` 已填 `F-B0053-017`（農場 3 天逐 3 小時，清境農場）；想改用鳶峰停車場（2,750 m）則填 `F-B0053-071`。
+- 雷達／衛星圖網址已驗證（衛星為 `.jpg`、時間戳皆為台灣時間）。
+- 要重新檢查時，用 `tools` workflow（手動觸發）在 Actions 上跑：
 ```bash
-cat > .github/workflows/tools.yml << 'YAML'
-name: tools
-on:
-  workflow_dispatch:
-    inputs:
-      tool: { type: choice, options: [find_cwa_dataset, probe_images], default: find_cwa_dataset }
-jobs:
-  run:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with: { python-version: "3.12" }
-      - run: pip install -q -r requirements.txt
-      - env: { CWA_API_KEY: "${{ secrets.CWA_API_KEY }}" }
-        run: python tools/${{ github.event.inputs.tool }}.py
-YAML
-git add -A && git commit -m "tools workflow" && git push
 REPO="${OWNER}/starryhouse-weather-forecast"
-gh workflow run tools -R "$REPO" -f tool=find_cwa_dataset && sleep 75
-gh run view -R "$REPO" $(gh run list -R "$REPO" --workflow tools -L1 --json databaseId -q '.[0].databaseId') --log | grep "F-B0053"
+gh workflow run tools -R "$REPO" -f tool=find_cwa_dataset                      # 掃描 F-B0053 全系列、列出地點名稱
+gh workflow run tools -R "$REPO" -f tool=inspect_cwa_dataset -f args="F-B0053-017 清境農場"   # 看某資料集的因子與筆數
+gh workflow run tools -R "$REPO" -f tool=probe_images                          # 驗證圖片網址（不需金鑰，本機也能跑）
+gh run view -R "$REPO" $(gh run list -R "$REPO" --workflow tools -L1 --json databaseId -q '.[0].databaseId') --log
 ```
-選「筆數約 24、時距 3 小時、因子含 Weather 與 ProbabilityOfPrecipitation」的 `F-B0053-0XX` 填入 `config.yaml` → `cwa.forecast_dataset`，push，再跑：
-```bash
-gh workflow run tools -R "$REPO" -f tool=probe_images && sleep 75
-gh run view -R "$REPO" $(gh run list -R "$REPO" --workflow tools -L1 --json databaseId -q '.[0].databaseId') --log | grep -A4 "^\["
-```
-任一產品 0 幀：請使用者開該產品的官網頁（`config.yaml` 的 `page`），用 DevTools → Network 找實際圖片網址貼回，把時間部分改成占位符 `{ts_local_compact}` `{ts_local_dash}` `{ts_utc_compact}` `{ts_utc_dash}` 之一，更新 `url` 後重跑。`sat_vis` 夜間 0 幀正常，以 `sat_ir` 為準。
-完成後可刪除 `tools.yml`。
 
 ## 5. 首次部署與驗證
 ```bash
