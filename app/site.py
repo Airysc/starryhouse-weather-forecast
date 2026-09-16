@@ -1,4 +1,4 @@
-"""把本次結果組成 build/：靜態頁 + data/latest.json + img/*.png|gif（每次全部重建，由 deploy-pages 整包部署）"""
+"""把本次結果組成 build/：靜態頁 + data/latest.json + img/*.webp（每次全部重建，由 deploy-pages 整包部署）"""
 import json
 import shutil
 from dataclasses import asdict
@@ -19,12 +19,19 @@ def write(ctx: dict) -> dict:
     for key, im in ctx["images"].items():
         e = {"label": im["label"], "page": im.get("page"), "n_frames": im["n_frames"],
              "latest_time": im["latest_time"].isoformat(timespec="minutes") if im.get("latest_time") else None,
-             "latest": None, "gif": None}
-        if im.get("latest_png"):
-            (BUILD / "img" / f"{key}.png").write_bytes(im["latest_png"]); e["latest"] = f"img/{key}.png"
-        if im.get("gif"):
-            (BUILD / "img" / f"{key}.gif").write_bytes(im["gif"]); e["gif"] = f"img/{key}.gif"
+             "latest": None, "frames": []}
+        if im.get("latest"):
+            (BUILD / "img" / f"{key}.webp").write_bytes(im["latest"]); e["latest"] = f"img/{key}.webp"
+        for i, (t, b) in enumerate(im.get("frames") or []):
+            name = f"img/{key}_{i:02d}.webp"
+            (BUILD / name).write_bytes(b)
+            e["frames"].append({"src": name, "time": t.isoformat(timespec="minutes")})
         images[key] = e
+
+    mb = ctx["cfg"]["site"].get("meteoblue") or {}
+    meteoblue = {"image": None, "widget_url": mb.get("widget_url"), "link": mb.get("link")}
+    if ctx.get("meteoblue_img"):
+        (BUILD / "img" / "meteoblue.webp").write_bytes(ctx["meteoblue_img"]); meteoblue["image"] = "img/meteoblue.webp"
 
     streams = []
     for s in ctx["streams"]:
@@ -48,7 +55,8 @@ def write(ctx: dict) -> dict:
         "obs": ctx["obs"],
         "images": images,
         "streams": streams,
-        "seven_timer": ctx["cfg"]["site"]["seven_timer"].format(lat=loc["latitude"], lon=loc["longitude"]),
+        "meteoblue": meteoblue,
+        "frame_ms": ctx["cfg"]["imagery"]["frame_ms"],
         "links": ctx["cfg"]["site"].get("links", []),
     }
     (BUILD / "data" / "latest.json").write_text(json.dumps(data, ensure_ascii=False, indent=1), encoding="utf-8")

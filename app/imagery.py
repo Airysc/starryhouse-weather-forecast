@@ -1,4 +1,4 @@
-"""氣象署雷達回波 / 衛星雲圖：抓最新一張 + 前 N 小時 GIF"""
+"""氣象署雷達回波 / 衛星雲圖：抓最新一張 + 前 N 小時動畫幀（皆縮圖轉 WebP，由網頁 JS 輪播）"""
 import io
 from datetime import datetime, timedelta, timezone
 import requests
@@ -39,23 +39,25 @@ def fetch_frames(product: dict, now_local: datetime, hours_back: int, step_min: 
     return frames
 
 
-def make_gif(frames: list[tuple[datetime, bytes]], frame_ms: int, max_w: int = 900) -> bytes | None:
-    if not frames:
-        return None
-    imgs = []
-    for _, b in frames:
-        im = Image.open(io.BytesIO(b)).convert("RGB")
-        if im.width > max_w:
-            im = im.resize((max_w, int(im.height * max_w / im.width)))
-        imgs.append(im.quantize(colors=128))
+def to_webp(b: bytes, max_w: int, quality: int) -> bytes:
+    im = Image.open(io.BytesIO(b)).convert("RGB")
+    if im.width > max_w:
+        im = im.resize((max_w, int(im.height * max_w / im.width)), Image.LANCZOS)
     buf = io.BytesIO()
-    durations = [frame_ms] * (len(imgs) - 1) + [frame_ms * 4]  # 最後一幀停久一點
-    imgs[0].save(buf, format="GIF", save_all=True, append_images=imgs[1:], duration=durations, loop=0, optimize=True)
+    im.save(buf, format="WEBP", quality=quality, method=4)
     return buf.getvalue()
 
 
+def pick_frames(frames: list, n: int) -> list:
+    """從 frames 均勻抽 n 幀，一定包含最後一幀"""
+    if len(frames) <= n:
+        return frames
+    idx = sorted({round(i * (len(frames) - 1) / (n - 1)) for i in range(n)})
+    return [frames[i] for i in idx]
+
+
 def collect(cfg: dict, now_local: datetime, is_daylight: bool) -> dict[str, dict]:
-    """回傳 {product_key: {label, page, latest_png, latest_time, gif, n_frames}}"""
+    """回傳 {product_key: {label, page, latest(bytes webp), latest_time, frames: [(time, bytes webp)], n_frames}}"""
     im = cfg["imagery"]
     out = {}
     for key, p in im["products"].items():
@@ -64,10 +66,12 @@ def collect(cfg: dict, now_local: datetime, is_daylight: bool) -> dict[str, dict
         if key == "sat_ir" and is_daylight and "sat_vis" in im["products"]:
             continue  # 白天用真實色，晚上用紅外線
         frames = fetch_frames(p, now_local, im["hours_back"], im["step_min"])
-        entry = {"label": p["label"], "page": p.get("page"), "n_frames": len(frames),
-                 "latest_png": None, "latest_time": None, "gif": None}
+        entry = {"label": p["label"], "page": p.get("page"), "n_frames": 0, "latest": None, "latest_time": None, "frames": []}
         if frames:
-            entry["latest_time"], entry["latest_png"] = frames[-1]
-            entry["gif"] = make_gif(frames, im["gif_frame_ms"])
+            entry["latest_time"] = frames[-1][0]
+            entry["latest"] = to_webp(frames[-1][1], im["max_width"], im["quality"])
+            picked = pick_frames(frames, im["anim_frames"])
+            entry["frames"] = [(t, to_webp(b, im["anim_width"], im["anim_quality"])) for t, b in picked]
+            entry["n_frames"] = len(entry["frames"])
         out[key] = entry
     return out

@@ -10,8 +10,14 @@ location:
 site:
   # 啟用 Pages 後填入實際網址；用來在啟動時讀上一次的 latest.json（直播 ID 快取）
   url: "https://airysc.github.io/starryhouse-weather-forecast/"
-  # 7Timer! ASTRO 圖片（直接由瀏覽器載入）
-  seven_timer: "https://www.7timer.info/bin/astro.php?lon={lon}&lat={lat}&lang=zh-TW&ac=0&unit=metric&tzshift=8"
+  # meteoblue 免費 widget：build 時用無頭 Chromium 截圖存成 img/meteoblue.webp；截不到時網頁退回 iframe
+  meteoblue:
+    widget_url: "https://www.meteoblue.com/en/weather/widget/meteogram/24.076N121.171E2072_Asia%2FTaipei?geoloc=fixed&temperature_units=CELSIUS&windspeed_units=METER_PER_SECOND&precipitation_units=MILLIMETER&forecast_days=5&layout=dark&autowidth=auto&user_key=390e0305437716ff&embed_key=f81edba36614bb7c&sig=7b9048c51cb706256d6cdfc48668815c197ea5dfafdea459e2f8fb187d72f362"
+    link: "https://www.meteoblue.com/en/weather/week/index"
+    width: 1100
+    height: 400
+    scale: 1.5
+    quality: 82
   # 頁尾連結
   links:
     - label: 氣象署 清境農場 預報
@@ -47,10 +53,15 @@ cwa:
   obs_station_name: ""
 
 imagery:
-  # 每張圖每 10 分鐘一幀；動畫涵蓋前幾小時
+  # 每張圖每 10 分鐘一幀；動畫涵蓋前幾小時。全部縮圖轉 WebP 存在 Pages，網頁 JS 輪播動畫幀
   hours_back: 3
   step_min: 10
-  gif_frame_ms: 250
+  max_width: 800        # 最新一張
+  quality: 80
+  anim_frames: 10       # 動畫抽幀數（含最新一幀）
+  anim_width: 640
+  anim_quality: 70
+  frame_ms: 300
   # 網址格式已用 tools/probe_images.py 驗證（2026-09-16）：雷達為 png、衛星為 jpg，時間戳皆為台灣時間
   products:
     radar:
