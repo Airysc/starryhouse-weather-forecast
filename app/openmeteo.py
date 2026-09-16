@@ -8,7 +8,7 @@ def hourly_clouds(cfg: dict) -> dict[str, dict]:
     r = requests.get("https://api.open-meteo.com/v1/forecast", params={
         "latitude": s["latitude"], "longitude": s["longitude"], "elevation": s["elevation_m"],
         "hourly": "cloud_cover,cloud_cover_low,cloud_cover_mid,cloud_cover_high,precipitation_probability",
-        "timezone": s["timezone"], "forecast_days": 2,
+        "timezone": s["timezone"], "forecast_days": 3,
     }, timeout=30)
     r.raise_for_status()
     h = r.json()["hourly"]

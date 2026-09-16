@@ -71,9 +71,16 @@ def forecast(cfg: dict, key: str) -> dict:
                 slots.setdefault(st, {"start": st, "end": en}).update(ev)
             elif dt:
                 hourly.setdefault(dt, {}).update(ev)
+    def wind_for(st, en):
+        """風速／風級的 DataTime 不一定對齊時段起點，取落在時段內的那筆，否則取起點前最近一筆"""
+        inside = [t for t in sorted(hourly) if st <= t < en and "BeaufortScale" in hourly[t]]
+        before = [t for t in sorted(hourly) if t <= st and "BeaufortScale" in hourly[t]]
+        t = inside[0] if inside else (before[-1] if before else None)
+        return hourly[t] if t else {}
+
     out = []
     for st in sorted(slots):
-        s = {**hourly.get(st, {}), **slots[st]}
+        s = {**wind_for(st, slots[st]["end"]), **hourly.get(st, {}), **slots[st]}
         out.append({
             "start": s["start"], "end": s["end"],
             "weather": s.get("Weather"),

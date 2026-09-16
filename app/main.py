@@ -10,7 +10,7 @@ from datetime import datetime, timedelta
 
 import requests
 
-from . import cwa, openmeteo, imagery, youtube, site
+from . import cwa, openmeteo, imagery, youtube, site, seventimer
 from .config import load_config, secret
 from .scoring import Slot, classify, summarize
 from .sun import now_local, sun_times
@@ -114,6 +114,19 @@ def collect(cfg: dict) -> dict:
     slots = build_slots(cfg, fc, clouds, now)
     forecast24 = build_forecast24(cfg, fc, hourly, now)
 
+    # 雲量與視寧度格狀表：Open-Meteo 逐時 48 小時 + 7Timer 每 3 小時
+    start = now.replace(minute=0, second=0, microsecond=0)
+    cloud_rows = []
+    for k in range(48):
+        t = start + timedelta(hours=k)
+        v = (clouds or {}).get(t.strftime("%Y-%m-%dT%H:00"))
+        cloud_rows.append({"time": t.isoformat(timespec="minutes"), **({"low": v["low"], "mid": v["mid"], "high": v["high"], "pop": v["pop"]} if v else {"low": None, "mid": None, "high": None, "pop": None})})
+    astro7 = []
+    try:
+        astro7 = [a for a in seventimer.astro(cfg) if start - timedelta(hours=3) < datetime.fromisoformat(a["time"]) < start + timedelta(hours=48)]
+    except Exception as e:
+        log("7Timer failed:", e)
+
     images = {}
     try:
         images = imagery.collect(cfg, now, is_daylight)
@@ -133,7 +146,8 @@ def collect(cfg: dict) -> dict:
         streams.append(entry)
 
     return {"cfg": cfg, "now": now, "sun": sun, "slots": slots, "summary": summarize(slots),
-            "forecast24": forecast24, "obs": obs, "images": images, "streams": streams}
+            "forecast24": forecast24, "clouds": cloud_rows, "astro7": astro7,
+            "obs": obs, "images": images, "streams": streams}
 
 
 def main():

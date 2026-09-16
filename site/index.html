@@ -24,7 +24,8 @@
   * { box-sizing: border-box; }
   html { background: var(--night); color: var(--ink); font-family: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif; font-size: 16px; line-height: 1.6; }
   body { margin: 0; padding: 0 20px 64px; }
-  main { max-width: 680px; margin: 0 auto; }
+  main { max-width: 1280px; margin: 0 auto; }
+  @media (min-width: 900px) { body { padding: 0 40px 64px; } }
   a { color: var(--ink); text-decoration-color: var(--muted); text-underline-offset: 3px; }
   a:hover { text-decoration-color: var(--ink); }
   header { padding: 44px 0 16px; text-align: center; }
@@ -33,7 +34,6 @@
   header .meta { font-size: .95rem; color: var(--muted); margin: 12px 0 0; }
   @media (max-width: 520px) {
     header h1 { font-size: 1.6rem; } header h1 .en { font-size: 1rem; }
-    header .meta .sep { display: none; } header .meta span { display: block; }
   }
 
 
@@ -77,6 +77,11 @@
   button.toggle[aria-pressed="true"] { background: var(--ink); color: var(--night); }
 
   .stream { margin: 0 0 24px; }
+  @media (min-width: 900px) {
+    #streams { display: grid; grid-template-columns: 1fr 1fr; gap: 0 32px; }
+    .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 0 32px; }
+    .pair section { border-top: 1px solid var(--line); }
+  }
   .stream .frame { position: relative; aspect-ratio: 16/9; background: var(--dusk); border-radius: 6px; overflow: hidden; }
   .stream iframe, .stream img { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; object-fit: cover; }
   .stream .off { position: absolute; inset: 0; display: grid; place-items: center; color: var(--muted); }
@@ -84,21 +89,80 @@
   .stream .cap strong { color: var(--ink); font-weight: 500; }
   .live { color: var(--bad); font-weight: 500; }
 
-  .astro { display: grid; grid-template-columns: 1fr 1fr; gap: 0 28px; }
-  .astro table { margin-bottom: 8px; }
-  .astro td:last-child { text-align: right; white-space: nowrap; }
-  .astro .moon { display: flex; align-items: center; gap: 14px; margin: 6px 0 14px; }
-  .astro .moon svg { width: 44px; height: 44px; flex: none; }
-  .astro .moon p { margin: 0; line-height: 1.45; }
-  .astro .moon small { color: var(--muted); }
-  .datepick { display: flex; align-items: center; gap: 10px; margin: 0 0 14px; font-size: .9rem; color: var(--muted); }
-  .datepick input { font: inherit; color: var(--ink); background: var(--dusk); border: 1px solid var(--line); border-radius: 6px; padding: 4px 8px; color-scheme: dark; }
-  .datepick button { font: inherit; font-size: .85rem; color: var(--ink); background: transparent; border: 1px solid var(--line); border-radius: 999px; padding: 2px 12px; cursor: pointer; }
-  .seven img { width: 100%; height: auto; border-radius: 6px; background: #fff; }
+  /* 天文時刻：夜間時間軸 */
+  :root { --day: #f5d76e; --civil: #f2a25c; --nautical: #8fc1e8; --astro: #4e6b8f; --dark: #0b1020; --moonup: #8fc1e8; }
+  .tl { display: grid; grid-template-columns: 5em 1fr; gap: 10px 12px; align-items: center; margin: 44px 0 6px; }
+  .tl .cap { color: var(--muted); font-size: .9rem; white-space: nowrap; }
+  .tl .track { position: relative; height: 12px; border-radius: 6px; background: var(--none); }
+  .tl .track.sky { height: 30px; border-radius: 8px; }
+  .tl .band { position: absolute; top: 0; bottom: 0; }
+  .tl .band.moonup { background: var(--moonup); border-radius: 6px; }
+  .tl .band.dark { background: var(--good); border-radius: 6px; }
+  .tl .mark { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--ink); opacity: .9; }
+  .tl .lab { position: absolute; font-size: .95rem; line-height: 1.25; white-space: nowrap; transform: translateX(-50%); text-align: center; }
+  .tl .lab b { display: block; font-weight: 500; font-size: 1.05rem; }
+  .tl .lab small { color: var(--muted); font-size: .8rem; }
+  .tl .lab.up { bottom: calc(100% + 6px); }
+  .tl .lab.down { top: calc(100% + 6px); }
+  .tl .lab.l { transform: none; text-align: left; }
+  .tl .lab.r { transform: translateX(-100%); text-align: right; }
+  .tl .sky-row { margin-bottom: 44px; }
+  .tl .moon-row { margin-bottom: 22px; }
+  .tl .lab.sm { font-size: .85rem; color: var(--muted); }
+  .tl .seg { position: absolute; top: 0; bottom: 0; }
+  .moon { display: flex; align-items: center; gap: 14px; margin: 18px 0 0; }
+  .moon svg { width: 44px; height: 44px; flex: none; }
+  .moon p { margin: 0; line-height: 1.5; }
+  .moon small { color: var(--muted); }
+  .datepick { display: flex; align-items: center; gap: 8px; margin: 0 0 14px; font-size: .95rem; }
+  .datepick button { font: inherit; font-size: .9rem; color: var(--ink); background: transparent; border: 1px solid var(--line); border-radius: 999px; padding: 3px 12px; cursor: pointer; }
+  .datepick button:hover { border-color: var(--muted); }
+  .datepick { position: relative; }
+  .datepick .cur { font: inherit; font-size: .95rem; font-weight: 500; color: var(--ink); background: transparent; border: 1px solid transparent; border-radius: 6px; padding: 3px 10px; cursor: pointer; }
+  .datepick .cur:hover, .datepick .cur[aria-expanded="true"] { background: var(--dusk); border-color: var(--line); }
+  .cal { position: absolute; top: calc(100% + 6px); left: 0; z-index: 5; width: 300px; max-width: calc(100vw - 40px); background: var(--dusk); border: 1px solid var(--line); border-radius: 10px; padding: 12px; box-shadow: 0 10px 30px rgba(0,0,0,.45); }
+  .cal[hidden] { display: none; }
+  .cal .head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; font-weight: 500; }
+  .cal .head button { font: inherit; color: var(--ink); background: transparent; border: 1px solid var(--line); border-radius: 999px; width: 30px; height: 30px; cursor: pointer; }
+  .cal .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; text-align: center; }
+  .cal .wd { color: var(--muted); font-size: .8rem; padding: 4px 0; }
+  .cal .d { font: inherit; color: var(--ink); background: transparent; border: 0; border-radius: 6px; padding: 6px 0; cursor: pointer; }
+  .cal .d:hover { background: var(--line); }
+  .cal .d.today { color: var(--ok); font-weight: 500; }
+  .cal .d.sel { background: var(--ink); color: var(--night); }
+  .cal .d.sel.today { color: var(--night); }
+  /* 區塊標題右側的來源標記（logo + 名稱） */
+  .h2row { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+  .h2row h2 { margin-bottom: 16px; }
+  .src { display: inline-flex; align-items: center; gap: 6px; flex: none; margin-top: .35rem; font-size: .85rem; color: var(--muted); text-decoration: none; }
+  .src:hover { color: var(--ink); }
+  .src img { height: 20px; width: auto; }
+  .src.mb img { height: 22px; }
+
+  /* 雲量與視寧度格狀表 */
+  .cg-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 6px; }
+  .cg { display: grid; grid-auto-rows: 22px; gap: 3px 2px; width: max-content; font-size: .8rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .cg .lbl { position: sticky; left: 0; z-index: 1; background: var(--night); padding-right: 10px; display: flex; align-items: center; white-space: nowrap; color: var(--ink); font-size: .85rem; }
+  .cg .lbl small { color: var(--muted); margin-left: 4px; font-size: .75rem; }
+  .cg .day { display: flex; align-items: flex-end; padding-left: 4px; border-left: 1px solid var(--muted); color: var(--ink); font-size: .8rem; white-space: nowrap; }
+  .cg .hr { display: flex; align-items: center; justify-content: center; }
+  .cg .hr.now { color: var(--ink); font-weight: 500; }
+  .cg .c { border-radius: 4px; background: var(--none); }
+  .cg .c.now { outline: 2px solid var(--ink); outline-offset: -2px; }
+  .cg .c.na { background: repeating-linear-gradient(45deg, var(--none) 0 3px, transparent 3px 6px); }
+  .cg-legend { display: flex; flex-wrap: wrap; gap: 8px 22px; margin-top: 12px; font-size: .8rem; color: var(--muted); align-items: center; }
+  .cg-legend i { display: inline-block; width: 110px; height: 10px; border-radius: 5px; vertical-align: middle; margin: 0 6px; }
+
+  .mb-wrap { border-radius: 8px; overflow: hidden; background: var(--dusk); }
+  .mb-wrap iframe { display: block; width: 100%; border: 0; }
+  /* 手機：meteoblue 圖表不縮放，改成可左右捲動（跟 24 小時表、雲量表一致） */
+  @media (max-width: 899px) { .mb-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; } .mb-wrap iframe { min-width: 820px; } }
+
   .links { display: flex; flex-wrap: wrap; gap: 8px 20px; margin: 0 0 12px; padding: 0; list-style: none; }
-  @media (max-width: 520px) { .astro { grid-template-columns: 1fr; } }
+  @media (max-width: 520px) { .tl { grid-template-columns: 3.6em 1fr; gap: 10px 8px; } .tl .lab { font-size: .85rem; } .tl .lab b { font-size: .95rem; } }
   footer { border-top: 1px solid var(--line); margin-top: 24px; padding-top: 20px; color: var(--muted); font-size: .85rem; }
   footer p { margin: 0 0 10px; }
+  footer .copy { margin-top: 20px; text-align: center; }
   .empty { color: var(--muted); }
   :focus-visible { outline: 2px solid var(--ok); outline-offset: 2px; }
   @media (prefers-reduced-motion: no-preference) { button.toggle { transition: background .15s, color .15s; } }
@@ -112,45 +176,8 @@
   </header>
 
   <section>
-    <h2>即時天氣<small id="obsMeta"></small></h2>
+    <div class="h2row"><h2>即時天氣<small id="obsMeta"></small></h2><a class="src" id="obsSrc" href="https://www.cwa.gov.tw/V8/C/W/OBS_Map.html" target="_blank" rel="noopener"><img src="icons/cwa.svg" alt="">中央氣象署</a></div>
     <div class="tiles" id="obs"></div>
-  </section>
-
-  <section>
-    <h2>未來 24 小時預報<small>氣象署 清境農場 逐 3 小時預報</small></h2>
-    <div class="fc-wrap"><table class="fc" id="fc"></table></div>
-  </section>
-
-  <section class="astro-sec">
-    <h2>天文時刻<small>依觀星園座標即時計算，台灣時間</small></h2>
-    <div class="datepick">
-      <label for="date">日期</label><input type="date" id="date">
-      <button type="button" id="today">今天</button>
-    </div>
-    <div class="astro">
-      <div>
-        <table id="sunTable">
-          <tr><td>日落</td><td id="t_sunset"></td></tr>
-          <tr><td>民用曙暮光結束</td><td id="t_dusk"></td></tr>
-          <tr><td>航海曙暮光結束</td><td id="t_ndusk"></td></tr>
-          <tr><td>天文曙暮光結束</td><td id="t_adusk"></td></tr>
-          <tr><td>天文曙暮光開始</td><td id="t_adawn"></td></tr>
-          <tr><td>航海曙暮光開始</td><td id="t_ndawn"></td></tr>
-          <tr><td>民用曙暮光開始</td><td id="t_dawn"></td></tr>
-          <tr><td>日出</td><td id="t_sunrise"></td></tr>
-        </table>
-      </div>
-      <div>
-        <div class="moon"><svg id="moonSvg" viewBox="0 0 44 44" aria-hidden="true"></svg><p id="moonText"></p></div>
-        <table id="moonTable">
-          <tr><td>月出</td><td id="t_moonrise"></td></tr>
-          <tr><td>月落</td><td id="t_moonset"></td></tr>
-          <tr><td>照明度</td><td id="t_illum"></td></tr>
-          <tr><td>月齡</td><td id="t_age"></td></tr>
-        </table>
-        <p id="darkText" class="empty" style="margin:0;font-size:.9rem"></p>
-      </div>
-    </div>
   </section>
 
   <section>
@@ -159,25 +186,53 @@
   </section>
 
   <section>
-    <h2>雷達回波<small id="radarMeta"></small></h2>
+    <div class="h2row"><h2>未來 24 小時預報<small>清境農場 逐 3 小時預報</small></h2><a class="src" href="https://www.cwa.gov.tw/V8/C/L/Farm/Farm.html?QS=&PID=E011" target="_blank" rel="noopener"><img src="icons/cwa.svg" alt="">中央氣象署</a></div>
+    <div class="fc-wrap"><table class="fc" id="fc"></table></div>
+  </section>
+
+  <section class="astro-sec">
+    <h2>天文時刻</h2>
+    <div class="datepick" id="datepick" title="鍵盤：← → 前後一天，↑ ↓ 前後一週">
+      <button type="button" id="prev" aria-label="前一天">‹</button>
+      <button type="button" class="cur" id="cur" aria-haspopup="dialog" aria-expanded="false"></button>
+      <div class="cal" id="cal" hidden></div>
+      <button type="button" id="next" aria-label="後一天">›</button>
+      <button type="button" id="today">今天</button>
+    </div>
+    <div class="tl" id="tl"></div>
+    <div class="moon"><svg id="moonSvg" viewBox="0 0 44 44" aria-hidden="true"></svg><p id="moonText"></p></div>
+  </section>
+
+  <div class="pair">
+  <section>
+    <div class="h2row"><h2>雷達回波</h2><a class="src" href="https://www.cwa.gov.tw/V8/C/W/OBS_Radar.html" target="_blank" rel="noopener"><img src="icons/cwa.svg" alt="">中央氣象署</a></div>
     <div id="img_radar"></div>
   </section>
 
   <section>
-    <h2>衛星雲圖<small id="satMeta"></small></h2>
+    <div class="h2row"><h2>衛星雲圖</h2><a class="src" href="https://www.cwa.gov.tw/V8/C/W/OBS_Sat.html" target="_blank" rel="noopener"><img src="icons/cwa.svg" alt="">中央氣象署</a></div>
     <div id="img_sat"></div>
   </section>
+  </div>
 
-  <section class="seven">
-    <h2>72 小時天文氣象預報<small>7Timer! ASTRO・雲量／視寧度／透明度</small></h2>
-    <a id="sevenLink" target="_blank" rel="noopener"><img id="sevenImg" alt="7Timer ASTRO 預報圖" loading="lazy"></a>
+  <section>
+    <div class="h2row"><h2>雲量與視寧度預報</h2></div>
+    <div class="cg-wrap"><div class="cg" id="cg"></div></div>
+    <div class="cg-legend" id="cgLegend"></div>
+  </section>
+
+  <section>
+    <div class="h2row"><h2>氣象圖</h2><a class="src mb" href="https://www.meteoblue.com/en/weather/week/index" target="_blank" rel="noopener" title="meteoblue"><img src="icons/meteoblue.svg" alt="meteoblue"></a></div>
+    <div class="mb-wrap">
+      <iframe src="https://www.meteoblue.com/en/weather/widget/meteogram/24.076N121.171E2072_Asia%2FTaipei?geoloc=fixed&temperature_units=CELSIUS&windspeed_units=METER_PER_SECOND&precipitation_units=MILLIMETER&forecast_days=5&layout=dark&autowidth=auto&user_key=390e0305437716ff&embed_key=f81edba36614bb7c&sig=7b9048c51cb706256d6cdfc48668815c197ea5dfafdea459e2f8fb187d72f362" frameborder="0" scrolling="NO" allowtransparency="true" sandbox="allow-same-origin allow-scripts allow-popups allow-popups-to-escape-sandbox" style="width: 100%;height: 400px;border: 0;overflow: hidden;" loading="lazy" title="meteoblue 氣象圖"></iframe>
+    </div>
+
   </section>
 
   <footer>
     <ul class="links" id="links"></ul>
-    <p>資料來源：中央氣象署開放資料與官網圖資、Open-Meteo、7Timer!、臺北天文館與親子觀星會 YouTube 直播。判斷規則以氣象署「天氣現象」與「3 小時降雨機率」為主。</p>
-    <p>鳶峰海拔約 2,750 m，常位於雲海之上；鳶峰晴朗不代表觀星園（約 2,090 m）晴朗，反之則多半準確。出發前請以即時影像為準。</p>
-    <p>每 10 分鐘更新一次。<a href="data/latest.json">原始資料</a></p>
+    <p>資料來源：中央氣象署（即時觀測、清境農場預報、雷達與衛星圖資）、Open-Meteo（雲量、降雨率）、7Timer!（視寧度、透明度）、meteoblue（氣象圖）、臺北天文館與親子觀星會 YouTube 直播。觀測判斷依氣象署天氣現象與 3 小時降雨機率。每 10 分鐘更新一次。</p>
+    <p class="copy">© 2026 觀星園天文台. 本網站由倍勢科技設計與維護。</p>
   </footer>
 </main>
 
@@ -201,7 +256,7 @@
     d = { location: { lat: 24.076361, lon: 121.171222 }, slots: [], images: {}, streams: [], links: [] };
   }
 
-  if (d.generated_at) $("meta").innerHTML = `<span>上次更新時間：${full(d.generated_at)}</span><span class="sep">・</span><span>每 10 分鐘刷新</span>`;
+  if (d.generated_at) $("meta").textContent = `上次更新時間：${full(d.generated_at)}`;
 
   // 即時天氣（卡片：第一列 icon＋名稱，第二列 數值＋單位）
   const ICON = {
@@ -216,7 +271,7 @@
   const o = d.obs;
   if (o) {
     const stn = o.station_id ? `<a href="https://www.cwa.gov.tw/V8/C/W/OBS_Station.html?ID=${o.station_id}" target="_blank" rel="noopener">${o.station}站</a>` : `${o.station}站`;
-    $("obsMeta").innerHTML = `${stn}・距 ${o.dist_km} km・${hm(o.time)} 觀測`;
+    $("obsMeta").innerHTML = `${stn}・更新時間：${hm(o.time)}`;
     const t = num(o.temp), rh = num(o.rh), w = num(o.wind), r = num(o.rain_now);
     $("obs").innerHTML =
       tile("temp", "溫度", t != null ? (+t).toFixed(1) : "–", "°C") +
@@ -285,44 +340,89 @@
     const noon = new Date(Date.UTC(y, m - 1, dd, 4, 0));               // 台灣中午 12:00 = UTC 04:00
     const nextNoon = new Date(noon.getTime() + 86400000);
     const t = SunCalc.getTimes(noon, LAT, LON), n = SunCalc.getTimes(nextNoon, LAT, LON);
-    $("t_sunset").textContent = fmt(t.sunset);   $("t_dusk").textContent = fmt(t.dusk);
-    $("t_ndusk").textContent = fmt(t.nauticalDusk); $("t_adusk").textContent = fmt(t.night);
-    $("t_adawn").textContent = fmt(n.nightEnd);  $("t_ndawn").textContent = fmt(n.nauticalDawn);
-    $("t_dawn").textContent = fmt(n.dawn);       $("t_sunrise").textContent = fmt(n.sunrise);
-    // 月出月落：找從當天中午起 24 小時內的事件
+    const ok = (x) => x instanceof Date && !isNaN(x);
+    // 時間軸範圍：日落前 40 分 ～ 日出後 40 分
+    const t0 = t.sunset.getTime() - 40 * 60000, t1 = n.sunrise.getTime() + 40 * 60000;
+    const pct = (x) => Math.max(0, Math.min(100, (x.getTime() - t0) / (t1 - t0) * 100)).toFixed(2) + "%";
+    const seg = (a, b, color) => (ok(a) && ok(b)) ? `<i class="seg" style="left:${pct(a)};right:${(100 - parseFloat(pct(b))).toFixed(2)}%;background:${color}"></i>` : "";
+    // 天空色帶：白天 → 民用 → 航海 → 天文 → 夜 → 天文 → 航海 → 民用 → 白天
+    const sky =
+      seg(new Date(t0), t.sunset, "var(--day)") + seg(t.sunset, t.dusk, "var(--civil)") + seg(t.dusk, t.nauticalDusk, "var(--nautical)") +
+      seg(t.nauticalDusk, t.night, "var(--astro)") + seg(t.night, n.nightEnd, "var(--dark)") +
+      seg(n.nightEnd, n.nauticalDawn, "var(--astro)") + seg(n.nauticalDawn, n.dawn, "var(--nautical)") + seg(n.dawn, n.sunrise, "var(--civil)") + seg(n.sunrise, new Date(t1), "var(--day)");
+    const lab = (x, cls, title, sub) => ok(x) ? `<span class="lab ${cls}" style="left:${pct(x)}">${title}<b>${fmt(x)}</b>${sub ? `<small>${sub}</small>` : ""}</span>` : "";
+    const marks = [t.sunset, t.night, n.nightEnd, n.sunrise].filter(ok).map(x => `<i class="mark" style="left:${pct(x)}"></i>`).join("");
+    let html = `<div class="cap">曙暮光</div><div class="track sky sky-row">${sky}${marks}` +
+      lab(t.sunset, "up l", "日落") + lab(n.sunrise, "up r", "日出") +
+      lab(t.night, "down", "天文曙暮光結束") + lab(n.nightEnd, "down", "天文曙暮光開始") + `</div>`;
+    // 月亮：地平線上的時段（以 10 分鐘取樣，能處理跨日與整夜在上／在下）
+    const moonUp = (x) => SunCalc.getMoonPosition(new Date(x), LAT, LON).altitude > 0;
+    const runs = (from, to, pred) => { const out = []; let cur = null; for (let x = from; x <= to; x += 600000) { const v = pred(x); if (v && cur === null) cur = x; if (!v && cur !== null) { out.push([cur, x]); cur = null; } } if (cur !== null) out.push([cur, to]); return out; };
+    const moonRuns = runs(t0, t1, moonUp);
+    const sm = (x, text, cls) => `<span class="lab down sm ${cls}" style="left:${pct(new Date(x))}">${text} ${fmt(new Date(x))}</span>`;
+    const moonLabs = moonRuns.map(([a, b]) => (a > t0 ? sm(a, "月出", parseFloat(pct(new Date(a))) < 12 ? "l" : "") : "") + (b < t1 ? sm(b, "月落", parseFloat(pct(new Date(b))) > 88 ? "r" : "") : "")).join("");
+    html += `<div class="cap">月光</div><div class="track moon-row">${moonRuns.map(([a, b]) => `<i class="band moonup" style="left:${pct(new Date(a))};right:${(100 - parseFloat(pct(new Date(b)))).toFixed(2)}%"></i>`).join("")}${moonLabs}</div>`;
+    // 無月暗夜：天文夜內且月亮在地平線下，至少 30 分鐘
+    let darkRuns = [];
+    if (ok(t.night) && ok(n.nightEnd)) darkRuns = runs(t.night.getTime(), n.nightEnd.getTime(), (x) => !moonUp(x)).filter(([a, b]) => b - a >= 1800000);
+    html += `<div class="cap">無月時段</div><div class="track">${darkRuns.map(([a, b]) => `<i class="band dark" style="left:${pct(new Date(a))};right:${(100 - parseFloat(pct(new Date(b)))).toFixed(2)}%"></i>`).join("")}</div>`;
+    $("tl").innerHTML = html;
+    // 月相與文字摘要
+    const mid = new Date(noon.getTime() + 43200000);                   // 當夜 00:00
+    const ill = SunCalc.getMoonIllumination(mid);
+    $("moonSvg").innerHTML = moonSvg(ill.fraction, ill.phase);
     const mt = SunCalc.getMoonTimes(noon, LAT, LON, true), mt2 = SunCalc.getMoonTimes(nextNoon, LAT, LON, true);
     const pick = (a, b) => (a && a >= noon && a < nextNoon) ? a : (b && b >= noon && b < nextNoon) ? b : null;
     const rise = pick(mt.rise, mt2.rise), set = pick(mt.set, mt2.set);
-    $("t_moonrise").textContent = rise ? fmt(rise) + (rise.getTime() - noon.getTime() > 43200000 ? "（翌日）" : "") : (mt.alwaysUp ? "整日在地平線上" : "此夜無月出");
-    $("t_moonset").textContent = set ? fmt(set) + (set.getTime() - noon.getTime() > 43200000 ? "（翌日）" : "") : (mt.alwaysDown ? "整日在地平線下" : "此夜無月落");
-    const mid = new Date(noon.getTime() + 43200000);                   // 當夜 00:00
-    const ill = SunCalc.getMoonIllumination(mid);
-    $("t_illum").textContent = Math.round(ill.fraction * 100) + "%";
-    $("t_age").textContent = (ill.phase * 29.53).toFixed(1) + " 天";
-    $("moonSvg").innerHTML = moonSvg(ill.fraction, ill.phase);
-    $("moonText").innerHTML = `${PHASE_NAME(ill.phase)}<br><small>午夜照明度 ${Math.round(ill.fraction * 100)}%</small>`;
-    // 無月暗夜：天文曙暮光結束後到開始前，且月亮在地平線下的區段
-    let dark = "";
-    if (t.night && n.nightEnd) {
-      const nightStart = t.night, nightEnd = n.nightEnd;
-      const moonUp = (x) => SunCalc.getMoonPosition(x, LAT, LON).altitude > 0;
-      let seg = [], cur = null;
-      for (let x = nightStart.getTime(); x <= nightEnd.getTime(); x += 600000) {
-        const up = moonUp(new Date(x));
-        if (!up && cur === null) cur = x;
-        if (up && cur !== null) { seg.push([cur, x]); cur = null; }
-      }
-      if (cur !== null) seg.push([cur, nightEnd.getTime()]);
-      seg = seg.filter(([a, b]) => b - a >= 1800000);
-      dark = seg.length ? "無月暗夜：" + seg.map(([a, b]) => `${fmt(new Date(a))}–${fmt(new Date(b))}`).join("、") : "此夜整段天文夜均有月光";
-    }
-    $("darkText").textContent = dark;
+    const nx = (x) => x ? fmt(x) + (x.getTime() - noon.getTime() > 43200000 ? "（翌日）" : "") : "—";
+    const darkText = darkRuns.length ? "無月時段 " + darkRuns.map(([a, b]) => `${fmt(new Date(a))}–${fmt(new Date(b))}`).join("、") : "整夜有月光";
+    $("moonText").innerHTML = `${PHASE_NAME(ill.phase)}・照明率 ${Math.round(ill.fraction * 100)}%・月齡 ${(ill.phase * 29.53).toFixed(1)} 天<br><small>${darkText}</small>`;
   }
   const todayTW = new Date().toLocaleDateString("sv-SE", { timeZone: "Asia/Taipei" });
-  $("date").value = todayTW;
-  renderAstro(todayTW);
-  $("date").addEventListener("change", (e) => e.target.value && renderAstro(e.target.value));
-  $("today").addEventListener("click", () => { $("date").value = todayTW; renderAstro(todayTW); });
+  const WDN = ["日", "一", "二", "三", "四", "五", "六"];
+  let curDate = todayTW, calYM = null;                                // calYM = 月曆目前顯示的 [年, 月]
+  const ymd = (y, m, d) => `${y}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+  const dow = (ds) => new Date(ds + "T12:00:00+08:00").getDay();
+  function setDate(ds) {
+    curDate = ds;
+    $("cur").textContent = `${ds.replace(/-/g, "/")}（${WDN[dow(ds)]}）${ds === todayTW ? " 今晚" : ""}`;
+    renderAstro(ds);
+    if (!$("cal").hidden) renderCal();
+  }
+  const shift = (days) => { const dt = new Date(curDate + "T12:00:00+08:00"); dt.setUTCDate(dt.getUTCDate() + days); setDate(dt.toLocaleDateString("sv-SE", { timeZone: "Asia/Taipei" })); };
+  // 自製月曆：只列該月實際存在的日期
+  function renderCal() {
+    const [y, m] = calYM;
+    const days = new Date(y, m, 0).getDate(), first = dow(ymd(y, m, 1));
+    let html = `<div class="head"><button type="button" data-nav="-1" aria-label="上個月">‹</button><span>${y} 年 ${m} 月</span><button type="button" data-nav="1" aria-label="下個月">›</button></div><div class="grid">` +
+      WDN.map(w => `<span class="wd">${w}</span>`).join("") + `<span></span>`.repeat(first);
+    for (let d = 1; d <= days; d++) {
+      const ds = ymd(y, m, d);
+      html += `<button type="button" class="d${ds === curDate ? " sel" : ""}${ds === todayTW ? " today" : ""}" data-d="${ds}">${d}</button>`;
+    }
+    $("cal").innerHTML = html + `</div>`;
+  }
+  function openCal(show) {
+    $("cal").hidden = !show; $("cur").setAttribute("aria-expanded", show);
+    if (show) { calYM = [+curDate.slice(0, 4), +curDate.slice(5, 7)]; renderCal(); }
+  }
+  $("cal").addEventListener("click", (e) => {
+    const b = e.target.closest("button"); if (!b) return;
+    if (b.dataset.nav) { let [y, m] = calYM; m += +b.dataset.nav; if (m < 1) { m = 12; y--; } if (m > 12) { m = 1; y++; } calYM = [y, m]; renderCal(); }
+    else if (b.dataset.d) { setDate(b.dataset.d); openCal(false); }
+  });
+  $("cur").addEventListener("click", () => openCal($("cal").hidden));
+  document.addEventListener("click", (e) => { if (!$("cal").hidden && !e.target.closest(".datepick")) openCal(false); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") openCal(false); });
+  $("datepick").addEventListener("keydown", (e) => {
+    const step = { ArrowLeft: -1, ArrowRight: 1, ArrowUp: 7, ArrowDown: -7 }[e.key];
+    if (step == null) return;
+    e.preventDefault(); shift(step);
+  });
+  setDate(todayTW);
+  $("prev").addEventListener("click", () => shift(-1));
+  $("next").addEventListener("click", () => shift(1));
+  $("today").addEventListener("click", () => setDate(todayTW));
 
   // 直播
   const sts = $("streams");
@@ -332,7 +432,7 @@
     el.className = "stream";
     if (s.live && s.video_id) {
       el.innerHTML = `<div class="frame"><iframe src="https://www.youtube.com/embed/${s.video_id}?autoplay=0" title="${s.name}" allow="picture-in-picture" allowfullscreen loading="lazy"></iframe></div>` +
-        `<p class="cap"><span class="live">直播中</span>　<strong>${s.name}</strong>${s.title ? `<br>${s.title}` : ""}　<a href="https://www.youtube.com/watch?v=${s.video_id}" target="_blank" rel="noopener">在 YouTube 開啟</a></p>`;
+        `<p class="cap"><span class="live">直播中</span>　<strong>${s.name}</strong>　<a href="https://www.youtube.com/watch?v=${s.video_id}" target="_blank" rel="noopener">在 YouTube 開啟</a></p>`;
     } else {
       el.innerHTML = `<div class="frame"><div class="off">目前未開播</div></div><p class="cap"><strong>${s.name}</strong>　目前未開播${s.handle ? `　<a href="https://www.youtube.com/@${s.handle}/streams" target="_blank" rel="noopener">頻道</a>` : ""}</p>`;
     }
@@ -343,7 +443,7 @@
   function figure(im) {
     const fig = document.createElement("figure");
     if (!im || !im.latest) {
-      fig.innerHTML = `<figcaption><span class="empty">取得失敗</span>${im && im.page ? `<a href="${im.page}" target="_blank" rel="noopener">官網</a>` : ""}</figcaption>`;
+      fig.innerHTML = `<figcaption><span class="empty">取得失敗</span>${im && im.page ? `<a href="${im.page}" target="_blank" rel="noopener">中央氣象署</a>` : ""}</figcaption>`;
       return fig;
     }
     const bust = d.generated_at ? "?v=" + encodeURIComponent(d.generated_at) : "";
@@ -360,16 +460,57 @@
       b.onclick = () => { const on = b.getAttribute("aria-pressed") !== "true"; b.setAttribute("aria-pressed", on); img.src = (on ? im.gif : im.latest) + bust; b.textContent = on ? "停止" : lbl; };
       cap.appendChild(b);
     }
-    if (im.page) { const a = document.createElement("a"); a.href = im.page; a.target = "_blank"; a.rel = "noopener"; a.textContent = "官網"; cap.appendChild(a); }
     fig.appendChild(cap);
     return fig;
   }
-  const radar = d.images.radar; $("img_radar").appendChild(figure(radar)); if (radar && radar.latest_time) $("radarMeta").textContent = hm(radar.latest_time);
-  const sat = d.images.sat_vis || d.images.sat_ir; $("img_sat").appendChild(figure(sat)); if (sat && sat.latest_time) $("satMeta").textContent = `${sat.label.replace("衛星雲圖", "").replace(/[（）]/g, "")}・${hm(sat.latest_time)}`;
+  $("img_radar").appendChild(figure(d.images.radar));
+  $("img_sat").appendChild(figure(d.images.sat_vis || d.images.sat_ir));
 
-  // 7Timer
-  if (d.seven_timer) { $("sevenImg").src = d.seven_timer + "&_=" + Date.now(); $("sevenLink").href = d.seven_timer; }
-  else document.querySelector(".seven").hidden = true;
+  // 雲量與視寧度格狀表
+  (function () {
+    const rows = d.clouds || [], a7 = d.astro7 || [], grid = $("cg");
+    if (!rows.length) { grid.innerHTML = `<p class="empty">取得失敗</p>`; return; }
+    const nowKey = (d.generated_at || "").slice(0, 13);
+    const lerp = (a, b, t) => a.map((x, i) => Math.round(x + (b[i] - x) * t));
+    const rgb = (c) => `rgb(${c.join(",")})`;
+    // 雲量／降雨率：深藍 → 白（愈亮愈多）
+    const CLOUD = [[28, 40, 78], [235, 240, 250]];
+    const cloudColor = (v) => v == null ? null : rgb(lerp(CLOUD[0], CLOUD[1], Math.max(0, Math.min(100, v)) / 100));
+    const RAIN = [[28, 40, 78], [90, 170, 235]];
+    const rainColor = (v) => v == null ? null : rgb(lerp(RAIN[0], RAIN[1], Math.max(0, Math.min(100, v)) / 100));
+    // 視寧度／透明度：7Timer 1（最佳）→ 8（最差）：綠 → 黃 → 紅
+    const SEE = [[110, 190, 80], [235, 200, 70], [225, 90, 80]];
+    const seeColor = (v) => { if (v == null) return null; const t = (Math.max(1, Math.min(8, v)) - 1) / 7; return rgb(t < .5 ? lerp(SEE[0], SEE[1], t * 2) : lerp(SEE[1], SEE[2], (t - .5) * 2)); };
+    const n = rows.length;
+    grid.style.gridTemplateColumns = `auto repeat(${n}, 22px)`;
+    let html = "";
+    // 日期列
+    html += `<div></div>`;
+    let i = 0;
+    while (i < n) { const day = rows[i].time.slice(0, 10); let j = i; while (j < n && rows[j].time.slice(0, 10) === day) j++; html += `<div class="day" style="grid-column: span ${j - i}">${+day.slice(5, 7)}/${+day.slice(8, 10)}</div>`; i = j; }
+    // 小時列
+    html += `<div></div>` + rows.map(r => `<div class="hr${r.time.slice(0, 13) === nowKey ? " now" : ""}">${+r.time.slice(11, 13)}</div>`).join("");
+    const cell = (color, title, extra = "") => color ? `<div class="c${extra}" style="background:${color}" title="${title}"></div>` : `<div class="c na${extra}" title="${title}：無資料"></div>`;
+    const hourRow = (label, sub, key, colorFn, unit) => `<div class="lbl">${label}${sub ? `<small>${sub}</small>` : ""}</div>` +
+      rows.map(r => cell(colorFn(r[key]), `${r.time.slice(5, 16).replace("T", " ")}　${label} ${r[key] ?? "–"}${unit}`, r.time.slice(0, 13) === nowKey ? " now" : "")).join("");
+    html += hourRow("高雲", "&gt;6 km", "high", cloudColor, "%");
+    html += hourRow("中雲", "2–6 km", "mid", cloudColor, "%");
+    html += hourRow("低雲", "&lt;2 km", "low", cloudColor, "%");
+    // 3 小時列：找每個小時所屬的 7Timer 時段（時段起點 ≤ 小時 < 起點 + 3h）
+    const find2 = (t) => { const ms = new Date(t).getTime(); return a7.find(a => { const s = new Date(a.time).getTime(); return s <= ms && ms < s + 3 * 3600000; }); };
+    const SEE_LBL = ["", "<0.5″", "0.5–0.75″", "0.75–1″", "1–1.25″", "1.25–1.5″", "1.5–2″", "2–2.5″", ">2.5″"];
+    const TR_LBL = ["", "<0.3", "0.3–0.4", "0.4–0.5", "0.5–0.6", "0.6–0.7", "0.7–0.85", "0.85–1", ">1"];
+    const row3 = (label, key, lbls, unit) => `<div class="lbl">${label}</div>` + rows.map(r => { const a = find2(r.time); const v = a ? a[key] : null; return cell(seeColor(v), `${r.time.slice(5, 16).replace("T", " ")}　${label} ${v != null ? lbls[v] + unit : "–"}`, r.time.slice(0, 13) === nowKey ? " now" : ""); }).join("");
+    html += row3("視寧度", "seeing", SEE_LBL, "");
+    html += row3("透明度", "transparency", TR_LBL, " mag");
+    html += hourRow("降雨率", "", "pop", rainColor, "%");
+    grid.innerHTML = html;
+    $("cgLegend").innerHTML =
+      `<span>雲量<i style="background:linear-gradient(90deg,${rgb(CLOUD[0])},${rgb(CLOUD[1])})"></i>0 → 100%</span>` +
+      `<span>視寧度<i style="background:linear-gradient(90deg,${rgb(SEE[0])},${rgb(SEE[1])},${rgb(SEE[2])})"></i>&lt;0.5″ → &gt;2.5″</span>` +
+      `<span>透明度<i style="background:linear-gradient(90deg,${rgb(SEE[0])},${rgb(SEE[1])},${rgb(SEE[2])})"></i>佳 → 差</span>` +
+      `<span>降雨率<i style="background:linear-gradient(90deg,${rgb(RAIN[0])},${rgb(RAIN[1])})"></i>0 → 100%</span>`;
+  })();
 
   // 頁尾連結
   for (const l of d.links || []) { const li = document.createElement("li"); li.innerHTML = `<a href="${l.url}" target="_blank" rel="noopener">${l.label}</a>`; $("links").appendChild(li); }

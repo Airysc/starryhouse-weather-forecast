@@ -43,6 +43,8 @@ def write(ctx: dict) -> dict:
         "summary": ctx["summary"],
         "slots": [asdict(s) for s in ctx["slots"]],
         "forecast24": ctx["forecast24"],
+        "clouds": ctx["clouds"],
+        "astro7": ctx["astro7"],
         "obs": ctx["obs"],
         "images": images,
         "streams": streams,
