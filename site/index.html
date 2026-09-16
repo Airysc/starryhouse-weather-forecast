@@ -107,6 +107,10 @@
   .tl .lab.l { transform: none; text-align: left; }
   .tl .lab.r { transform: translateX(-100%); text-align: right; }
   .tl .sky-row { margin-bottom: 44px; }
+  .tl-wrap .now { position: absolute; width: 2px; margin-left: -1px; background: var(--horizon); z-index: 2; pointer-events: none; }
+  .tl-wrap .now::before { content: ""; position: absolute; top: -6px; left: -5px; border: 6px solid transparent; border-top: 8px solid var(--horizon); border-bottom: 0; }
+  .tl-wrap .now[hidden] { display: none; }
+  .tl-wrap { position: relative; }
   .tl .moon-row { margin-bottom: 22px; }
   .tl .lab.sm { font-size: .85rem; color: var(--muted); }
   .tl .seg { position: absolute; top: 0; bottom: 0; }
@@ -160,6 +164,16 @@
 
   .links { display: flex; flex-wrap: wrap; gap: 8px 20px; margin: 0 0 12px; padding: 0; list-style: none; }
   @media (max-width: 520px) { .tl { grid-template-columns: 3.6em 1fr; gap: 10px 8px; } .tl .lab { font-size: .85rem; } .tl .lab b { font-size: .95rem; } }
+  /* 外部連結確認框 */
+  .leave { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; background: rgba(0,0,0,.55); padding: 20px; }
+  .leave[hidden] { display: none; }
+  .leave .box { width: 100%; max-width: 380px; background: var(--dusk); border: 1px solid var(--line); border-radius: 12px; padding: 20px 20px 16px; box-shadow: 0 16px 40px rgba(0,0,0,.5); }
+  .leave h3 { margin: 0 0 8px; font-size: 1.1rem; font-weight: 500; }
+  .leave p { margin: 0 0 16px; color: var(--muted); font-size: .95rem; word-break: break-all; }
+  .leave p strong { color: var(--ink); font-weight: 500; }
+  .leave .btns { display: flex; justify-content: flex-end; gap: 10px; }
+  .leave button { font: inherit; font-size: .95rem; border-radius: 999px; padding: 6px 18px; cursor: pointer; border: 1px solid var(--line); background: transparent; color: var(--ink); }
+  .leave button.go { background: var(--ink); color: var(--night); border-color: var(--ink); }
   footer { border-top: 1px solid var(--line); margin-top: 24px; padding-top: 20px; color: var(--muted); font-size: .85rem; }
   footer p { margin: 0 0 10px; }
   footer .copy { margin-top: 20px; text-align: center; }
@@ -199,7 +213,7 @@
       <button type="button" id="next" aria-label="後一天">›</button>
       <button type="button" id="today">今天</button>
     </div>
-    <div class="tl" id="tl"></div>
+    <div class="tl-wrap"><div class="tl" id="tl"></div><i class="now" id="nowMark" hidden aria-label="現在"></i></div>
     <div class="moon"><svg id="moonSvg" viewBox="0 0 44 44" aria-hidden="true"></svg><p id="moonText"></p></div>
   </section>
 
@@ -235,6 +249,14 @@
     <p class="copy">© 2026 觀星園天文台. 本網站由倍勢科技設計與維護。</p>
   </footer>
 </main>
+
+<div class="leave" id="leave" hidden role="dialog" aria-modal="true" aria-labelledby="leaveTitle">
+  <div class="box">
+    <h3 id="leaveTitle">即將前往外部網站</h3>
+    <p>將在新分頁開啟：<strong id="leaveHost"></strong></p>
+    <div class="btns"><button type="button" id="leaveNo">取消</button><button type="button" class="go" id="leaveGo">前往</button></div>
+  </div>
+</div>
 
 <script>
 (async function () {
@@ -343,6 +365,7 @@
     const ok = (x) => x instanceof Date && !isNaN(x);
     // 時間軸範圍：日落前 40 分 ～ 日出後 40 分
     const t0 = t.sunset.getTime() - 40 * 60000, t1 = n.sunrise.getTime() + 40 * 60000;
+    axis = { t0, t1, date: dateStr };
     const pct = (x) => Math.max(0, Math.min(100, (x.getTime() - t0) / (t1 - t0) * 100)).toFixed(2) + "%";
     const seg = (a, b, color) => (ok(a) && ok(b)) ? `<i class="seg" style="left:${pct(a)};right:${(100 - parseFloat(pct(b))).toFixed(2)}%;background:${color}"></i>` : "";
     // 天空色帶：白天 → 民用 → 航海 → 天文 → 夜 → 天文 → 航海 → 民用 → 白天
@@ -380,13 +403,30 @@
   }
   const todayTW = new Date().toLocaleDateString("sv-SE", { timeZone: "Asia/Taipei" });
   const WDN = ["日", "一", "二", "三", "四", "五", "六"];
-  let curDate = todayTW, calYM = null;                                // calYM = 月曆目前顯示的 [年, 月]
+  let curDate = todayTW, calYM = null, axis = null;
+  // 「現在」標示：只在今晚且落在軸範圍內才顯示；用本機時鐘，每分鐘更新
+  function placeNow() {
+    const m = $("nowMark"), tl = $("tl");
+    if (!axis || axis.date !== todayTW) { m.hidden = true; return; }
+    const now = Date.now();
+    if (now < axis.t0 || now > axis.t1) { m.hidden = true; return; }
+    const track = tl.querySelector(".track.sky"); if (!track) { m.hidden = true; return; }
+    const wrap = tl.parentElement.getBoundingClientRect(), tr = track.getBoundingClientRect();
+    const rows = tl.querySelectorAll(".track"); const last = rows[rows.length - 1].getBoundingClientRect();
+    m.style.left = (tr.left - wrap.left + tr.width * (now - axis.t0) / (axis.t1 - axis.t0)) + "px";
+    m.style.top = (tr.top - wrap.top - 8) + "px";
+    m.style.height = (last.bottom - tr.top + 8) + "px";
+    m.hidden = false;
+  }
+  setInterval(placeNow, 60000);
+  window.addEventListener("resize", placeNow);                                // calYM = 月曆目前顯示的 [年, 月]
   const ymd = (y, m, d) => `${y}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
   const dow = (ds) => new Date(ds + "T12:00:00+08:00").getDay();
   function setDate(ds) {
     curDate = ds;
     $("cur").textContent = `${ds.replace(/-/g, "/")}（${WDN[dow(ds)]}）${ds === todayTW ? " 今晚" : ""}`;
     renderAstro(ds);
+    placeNow();
     if (!$("cal").hidden) renderCal();
   }
   const shift = (days) => { const dt = new Date(curDate + "T12:00:00+08:00"); dt.setUTCDate(dt.getUTCDate() + days); setDate(dt.toLocaleDateString("sv-SE", { timeZone: "Asia/Taipei" })); };
@@ -520,6 +560,25 @@
       `<span>視寧度<i style="background:linear-gradient(90deg,${rgb(SEE[0])},${rgb(SEE[1])},${rgb(SEE[2])})"></i>&lt;0.5″ → &gt;2.5″</span>` +
       `<span>透明度<i style="background:linear-gradient(90deg,${rgb(SEE[0])},${rgb(SEE[1])},${rgb(SEE[2])})"></i>佳 → 差</span>` +
       `<span>降雨率<i style="background:linear-gradient(90deg,${rgb(RAIN[0])},${rgb(RAIN[1])})"></i>0 → 100%</span>`;
+  })();
+
+  // 外部連結：點擊先確認（只攔本站以外的 <a>；iframe 內的連結管不到）
+  (function () {
+    let pending = null;
+    const dlg = $("leave");
+    const close = () => { dlg.hidden = true; pending = null; };
+    document.addEventListener("click", (e) => {
+      const a = e.target.closest("a[href]"); if (!a) return;
+      let u; try { u = new URL(a.href, location.href); } catch (_) { return; }
+      if (u.origin === location.origin || !/^https?:$/.test(u.protocol)) return;
+      e.preventDefault(); pending = u.href;
+      $("leaveHost").textContent = u.hostname;
+      dlg.hidden = false; $("leaveGo").focus();
+    });
+    $("leaveGo").addEventListener("click", () => { if (pending) window.open(pending, "_blank", "noopener"); close(); });
+    $("leaveNo").addEventListener("click", close);
+    dlg.addEventListener("click", (e) => { if (e.target === dlg) close(); });
+    document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !dlg.hidden) close(); });
   })();
 
   // 頁尾連結
