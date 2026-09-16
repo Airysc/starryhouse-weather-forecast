@@ -19,6 +19,9 @@ def _get(dataset: str, key: str, **params) -> dict:
 
 
 def _num(v):
+    """數值字串 → int；氣象署會把 1 級以下的風級寫成 "<= 1"，取其中的數字"""
+    if isinstance(v, str):
+        v = v.replace("<=", "").replace("≤", "").strip()
     try:
         return int(float(v))
     except (TypeError, ValueError):
