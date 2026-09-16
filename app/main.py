@@ -48,6 +48,36 @@ def build_slots(cfg: dict, fc: list[dict], clouds: dict | None, now: datetime) -
     return slots
 
 
+def _parse(ts: str, tz) -> datetime | None:
+    try:
+        t = datetime.fromisoformat(ts.replace(" ", "T"))
+    except (ValueError, AttributeError):
+        return None
+    return t.replace(tzinfo=tz) if t.tzinfo is None else t
+
+
+def build_forecast24(cfg: dict, fc: list[dict], hourly: list[dict], now: datetime) -> dict:
+    """網頁用：從現在這個整點起 24 小時的逐時濕度，以及涵蓋這段時間的 3 小時時段（天氣、降雨、風級、判斷）。"""
+    sc = cfg["scoring"]
+    start = now.replace(minute=0, second=0, microsecond=0)
+    end = start + timedelta(hours=24)
+    hours = []
+    for h in hourly:
+        t = _parse(h["time"], now.tzinfo)
+        if t and start <= t < end:
+            hours.append({"time": t.isoformat(timespec="minutes"), "temp": h["temp"], "rh": h["rh"]})
+    slots = []
+    for f in fc:
+        t0, t1 = _parse(f["start"], now.tzinfo), _parse(f["end"], now.tzinfo)
+        if not t0 or not t1 or t1 <= start or t0 >= end:
+            continue
+        slots.append({"start": t0.isoformat(timespec="minutes"), "end": t1.isoformat(timespec="minutes"),
+                      "weather": f["weather"], "wcode": f.get("wcode"), "pop": f["pop"],
+                      "wind": f.get("wind"), "beaufort": f.get("beaufort"),
+                      "level": classify(f["weather"], f["pop"], sc)})
+    return {"start": start.isoformat(timespec="minutes"), "hours": hours, "slots": slots}
+
+
 def previous_state(cfg: dict) -> dict:
     """讀線上上一版 latest.json，取回直播 ID 快取。"""
     try:
@@ -66,9 +96,11 @@ def collect(cfg: dict) -> dict:
     is_daylight = sun["sunrise"] < now < sun["sunset"]
     cwa_key, yt_key = secret("CWA_API_KEY"), secret("YOUTUBE_API_KEY")
 
-    fc, clouds, obs = [], None, None
+    fc, hourly, clouds, obs = [], [], None, None
     try:
-        fc = cwa.forecast_3h(cfg, cwa_key) if cwa_key else []
+        if cwa_key:
+            f = cwa.forecast(cfg, cwa_key)
+            fc, hourly = f["slots"], f["hourly"]
     except Exception as e:
         log("CWA forecast failed:", e)
     try:
@@ -80,6 +112,7 @@ def collect(cfg: dict) -> dict:
     except Exception as e:
         log("CWA obs failed:", e)
     slots = build_slots(cfg, fc, clouds, now)
+    forecast24 = build_forecast24(cfg, fc, hourly, now)
 
     images = {}
     try:
@@ -100,7 +133,7 @@ def collect(cfg: dict) -> dict:
         streams.append(entry)
 
     return {"cfg": cfg, "now": now, "sun": sun, "slots": slots, "summary": summarize(slots),
-            "obs": obs, "images": images, "streams": streams}
+            "forecast24": forecast24, "obs": obs, "images": images, "streams": streams}
 
 
 def main():

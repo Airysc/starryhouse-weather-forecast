@@ -35,13 +35,14 @@ def write(ctx: dict) -> dict:
 
     loc = ctx["cfg"]["location"]
     data = {
-        "generated_at": ctx["now"].isoformat(timespec="minutes"),
+        "generated_at": ctx["now"].isoformat(timespec="seconds"),
         "site_name": loc["name"],
         "location": {"lat": loc["latitude"], "lon": loc["longitude"], "elevation_m": loc["elevation_m"]},
         "sunset": ctx["sun"]["sunset"].isoformat(timespec="minutes"),
         "sunrise": ctx["sun"]["sunrise"].isoformat(timespec="minutes"),
         "summary": ctx["summary"],
         "slots": [asdict(s) for s in ctx["slots"]],
+        "forecast24": ctx["forecast24"],
         "obs": ctx["obs"],
         "images": images,
         "streams": streams,

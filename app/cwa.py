@@ -42,8 +42,8 @@ def _find_location(obj, name: str):
     return None
 
 
-def forecast_3h(cfg: dict, key: str) -> list[dict]:
-    """回傳 [{start, end, weather, pop, temp, rh, desc}]，依時間排序。
+def forecast(cfg: dict, key: str) -> dict:
+    """回傳 {"slots": [{start, end, weather, wcode, pop, temp, rh, wind, beaufort, desc}], "hourly": [{time, temp, rh}]}，皆依時間排序。
 
     F-B0053 系列（育樂預報）只提供檔案下載（fileapi），不在 datastore。
     3 小時因子（天氣現象、降雨機率、綜合描述）有 StartTime/EndTime；
@@ -77,12 +77,17 @@ def forecast_3h(cfg: dict, key: str) -> list[dict]:
         out.append({
             "start": s["start"], "end": s["end"],
             "weather": s.get("Weather"),
+            "wcode": s.get("WeatherCode"),
             "pop": _num(s.get("ProbabilityOfPrecipitation")),
             "temp": _num(s.get("Temperature")),
             "rh": _num(s.get("RelativeHumidity")),
+            "wind": _num(s.get("WindSpeed")),
+            "beaufort": _num(s.get("BeaufortScale")),
             "desc": s.get("WeatherDescription"),
         })
-    return out
+    hours = [{"time": t, "temp": _num(v.get("Temperature")), "rh": _num(v.get("RelativeHumidity"))}
+             for t, v in sorted(hourly.items()) if "Temperature" in v or "RelativeHumidity" in v]
+    return {"slots": out, "hourly": hours}
 
 
 def _dist_km(lat1, lon1, lat2, lon2):
@@ -117,6 +122,7 @@ def observation(cfg: dict, key: str) -> dict:
     we = best.get("WeatherElement", {})
     return {
         "station": best.get("StationName"),
+        "station_id": best.get("StationId"),
         "dist_km": round(best_d, 1),
         "time": best.get("ObsTime", {}).get("DateTime"),
         "temp": we.get("AirTemperature"),
