@@ -41,9 +41,11 @@ cwa:
   #   F-B0053-071 觀星   → 鳶峰停車場（約 2,750 m，距觀星園約 8 km）
   forecast_dataset: F-B0053-017
   forecast_location: 清境農場
-  obs_dataset: O-A0001-001
-  # 留空 = 自動取距離最近的自動氣象站
-  obs_station_name: ""
+  # 即時觀測：O-A0001-001 自動氣象站為每小時（最近為梅峰 1 km）；O-A0003-001 每 10 分鐘更新，
+  # 附近有屯原（4 km、2047 m）、北東眼山（5.3 km）。tools/nearby_stations.py 可列出。
+  obs_dataset: O-A0003-001
+  # 留空 = 自動取該資料集裡距離最近的測站
+  obs_station_name: 屯原
 
 imagery:
   # 每張圖每 10 分鐘一幀；動畫涵蓋前幾小時。全部縮圖轉 WebP 存在 Pages，網頁 JS 輪播動畫幀

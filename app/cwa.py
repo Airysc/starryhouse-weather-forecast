@@ -113,11 +113,8 @@ def observation(cfg: dict, key: str) -> dict:
     best, best_d = None, 1e9
     for stn in rec.get("Station", []):
         name = stn.get("StationName")
-        if c.get("obs_station_name"):
-            if name != c["obs_station_name"]:
-                continue
-            best, best_d = stn, 0
-            break
+        if c.get("obs_station_name") and name != c["obs_station_name"]:
+            continue
         lat = lon = None
         for co in stn.get("GeoInfo", {}).get("Coordinates", []):
             if co.get("CoordinateName") == "WGS84":
