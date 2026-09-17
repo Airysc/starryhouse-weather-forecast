@@ -5,16 +5,21 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>觀星園天文台 天氣概況｜Starry House Observatory Weather</title>
 <meta name="description" content="清境觀星園每日傍晚更新：整晚 3 小時預報、即時觀測、雷達與衛星雲圖動畫、鳶峰與觀星園即時影像。">
+<link rel="icon" href="icons/logo_mini_round.svg" type="image/svg+xml">
+<link rel="icon" href="icons/favicon.ico" sizes="32x32">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#22314d">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/suncalc/1.9.0/suncalc.min.js"></script>
 <style>
   :root {
-    --night: #19233a;
-    --dusk: #1a2747;
+    --night: #22314d;
+    --dusk: #2b3d5e;
     --ink: #e9edf5;
     --muted: #9aa6c2;
-    --line: #2b3a5f;
+    --line: #3b4f74;
     --good: #8fd3a6;
     --ok: #f0c36a;
     --bad: #ee7f7b;
@@ -28,12 +33,14 @@
   @media (min-width: 900px) { body { padding: 0 40px 64px; } }
   a { color: var(--ink); text-decoration-color: var(--muted); text-underline-offset: 3px; }
   a:hover { text-decoration-color: var(--ink); }
-  header { padding: 44px 0 16px; text-align: center; }
-  header h1 { font-size: 2.1rem; font-weight: 500; line-height: 1.3; margin: 0; letter-spacing: .01em; }
-  header h1 .en { display: block; font-size: 1.15rem; font-weight: 400; color: var(--muted); margin-top: 4px; letter-spacing: .02em; }
-  header .meta { font-size: .95rem; color: var(--muted); margin: 12px 0 0; }
+  header { padding: 32px 0 12px; text-align: center; }
+  header .brand { display: inline-flex; align-items: center; gap: 16px; text-align: left; }
+  header .logo { width: 64px; height: 64px; border-radius: 50%; flex: none; border: 2px solid var(--moonup); box-shadow: 0 0 0 4px rgba(143, 193, 232, .18); }
+  header h1 { font-size: 2.1rem; font-weight: 500; line-height: 1.2; margin: 0; letter-spacing: .01em; }
+  header h1 .en { display: block; font-size: 1.1rem; font-weight: 400; color: var(--muted); margin-top: 2px; letter-spacing: .02em; }
+  header .meta { font-size: .95rem; color: var(--muted); margin: 10px 0 0; }
   @media (max-width: 520px) {
-    header h1 { font-size: 1.6rem; } header h1 .en { font-size: 1rem; }
+    header { padding-top: 24px; } header .brand { gap: 12px; } header h1 { font-size: 1.45rem; } header h1 .en { font-size: .9rem; } header .logo { width: 52px; height: 52px; }
   }
 
 
@@ -193,7 +200,7 @@
 <body>
 <main>
   <header>
-    <h1>觀星園天文台 天氣概況<span class="en">Starry House Observatory Weather</span></h1>
+    <div class="brand"><img class="logo" src="icons/logo.svg" alt="" width="64" height="64"><h1>觀星園天文台 天氣概況<span class="en">Starry House Observatory Weather</span></h1></div>
     <p class="meta" id="meta">載入中…</p>
   </header>
 

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 25.4.1, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<svg version="1.1" id="圖層_1" xmlns:c2pa="http://c2pa.org/manifest"
+	 xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 512 512"
+	 style="enable-background:new 0 0 512 512;" xml:space="preserve"><defs><clipPath id="rc"><circle cx="256" cy="256" r="256"/></clipPath></defs><g clip-path="url(#rc)">
+<style type="text/css">
+	.st0{fill:#1D2D3D;}
+	.st1{fill:#B5D9FD;}
+	.st2{fill:#416180;}
+	.st3{fill:#F2F2F3;}
+	.st4{display:none;}
+	.st5{display:inline;fill:none;stroke:#B5D9FD;stroke-width:1.8;}
+</style>
+<desc>
+	星位由 J2000 赤經赤緯經正射投影（北緯 24°、獵戶過中天、面南）求得；半徑依視星等分級。
+	</desc>
+<rect id="ground" y="0" class="st0" width="512" height="512"/>
+<circle id="sirius" class="st1" cx="128.7" cy="102" r="13.2"/>
+<polygon class="st2" points="512,357.8 511,357.9 406,331.6 301,350.8 211,322 106,365.1 1,348.4 0,348.6 0,415.4 512,415.4 "/>
+<path id="dome" class="st3" d="M120.6,415.4v-83.2c0-74.7,60.6-135.4,135.4-135.4s135.2,60.6,135.4,135.4v83.2H120.6z"/>
+<rect id="platform" x="68.5" y="405" class="st3" width="375" height="20.8"/>
+<g id="registration-marks" class="st4">
+	<path class="st5" d="M28.4,18.7v19.5 M18.7,28.4h19.5"/>
+	<path class="st5" d="M483.6,18.7v19.5 M473.8,28.4h19.5"/>
+	<path class="st5" d="M28.4,473.8v19.5 M18.7,483.6h19.5"/>
+	<path class="st5" d="M483.6,473.8v19.5 M473.8,483.6h19.5"/>
+</g>
+<rect y="425.9" class="st3" width="512" height="5.3"/>
+</g></svg>

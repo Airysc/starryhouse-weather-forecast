@@ -1,0 +1,12 @@
+{
+  "name": "觀星園天文台 天氣概況",
+  "short_name": "觀星園天氣",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#22314d",
+  "theme_color": "#22314d",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}

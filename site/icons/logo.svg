@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 25.4.1, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<svg version="1.1" id="圖層_1" xmlns:c2pa="http://c2pa.org/manifest"
+	 xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 512 512"
+	 style="enable-background:new 0 0 512 512;" xml:space="preserve">
+<style type="text/css">
+	.st0{fill:#1D2D3D;}
+	.st1{fill:#416180;}
+	.st2{fill:#F2F2F3;}
+	.st3{fill:#B5D9FD;}
+	.st4{display:none;}
+	.st5{display:inline;fill:none;stroke:#B5D9FD;stroke-width:1.8;}
+</style>
+<desc>
+	星位由 J2000 赤經赤緯經正射投影（北緯 24°、獵戶過中天、面南）求得；半徑依視星等分級。
+	</desc>
+<rect id="ground" y="0" class="st0" width="512" height="512"/>
+<polygon id="ridge" class="st1" points="0,429.4 0,398.4 81.9,383.7 153.6,395.1 225.3,365.7 286.7,385.3 358.4,372.2 430.1,390.2 
+	512,378.7 512,429.4 "/>
+<g id="orion">
+	<circle id="betelgeuse-shen-4" class="st2" cx="268.9" cy="46.1" r="6.7"/>
+	<circle id="bellatrix-shen-5" class="st2" cx="341.4" cy="56.6" r="5.2"/>
+	<circle id="mintaka-shen-3" class="st2" cx="324.8" cy="120.9" r="4.5"/>
+	<circle id="alnilam-shen-2" class="st2" cx="314.7" cy="129.5" r="5.2"/>
+	<circle id="alnitak-shen-1" class="st2" cx="303.7" cy="136.7" r="5.1"/>
+	<circle id="saiph-shen-6" class="st2" cx="286.9" cy="210.9" r="4.7"/>
+	<circle id="rigel-shen-7" class="st2" cx="366.8" cy="197.2" r="7"/>
+</g>
+<circle id="sirius" class="st3" cx="145.2" cy="289.9" r="9"/>
+<path id="dome" class="st2" d="M163.6,429.4v-56.8c0-51,41.4-92.4,92.4-92.4c51,0,92.3,41.4,92.4,92.4v56.8H163.6z"/>
+<rect id="platform" x="128" y="422.3" class="st2" width="256" height="14.2"/>
+<rect id="baseline" x="56.9" y="436.6" class="st2" width="398.2" height="3.6"/>
+<g id="registration-marks" class="st4">
+	<path class="st5" d="M28.4,18.7v19.5 M18.7,28.4h19.5"/>
+	<path class="st5" d="M483.6,18.7v19.5 M473.8,28.4h19.5"/>
+	<path class="st5" d="M28.4,473.8v19.5 M18.7,483.6h19.5"/>
+	<path class="st5" d="M483.6,473.8v19.5 M473.8,483.6h19.5"/>
+</g>
+</svg>
