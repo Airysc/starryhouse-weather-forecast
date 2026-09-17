@@ -61,10 +61,6 @@ def collect(cfg: dict, now_local: datetime, is_daylight: bool) -> dict[str, dict
     im = cfg["imagery"]
     out = {}
     for key, p in im["products"].items():
-        if p.get("daylight_only") and not is_daylight:
-            continue
-        if key == "sat_ir" and is_daylight and "sat_vis" in im["products"]:
-            continue  # 白天用真實色，晚上用紅外線
         frames = fetch_frames(p, now_local, im["hours_back"], im["step_min"])
         entry = {"label": p["label"], "page": p.get("page"), "n_frames": 0, "latest": None, "latest_time": None, "frames": []}
         if frames:

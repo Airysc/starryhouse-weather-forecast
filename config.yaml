@@ -63,15 +63,13 @@ imagery:
       label: 雷達回波
       url: "https://www.cwa.gov.tw/Data/radar/CV1_3600_{ts_local_compact}.png"
       page: "https://www.cwa.gov.tw/V8/C/W/OBS_Radar.html"
+    # 真實色全天可用：夜間氣象署以微光／紅外合成（低雲暗紅、高雲白）
     sat_vis:
       label: 衛星雲圖（真實色）
       url: "https://www.cwa.gov.tw/Data/satellite/TWI_TRGB_1350/TWI_TRGB_1350-{ts_local_dash}.jpg"
       page: "https://www.cwa.gov.tw/V8/C/W/OBS_Sat.html"
-      daylight_only: true
-    sat_ir:
-      label: 衛星雲圖（紅外線色調強化）
-      url: "https://www.cwa.gov.tw/Data/satellite/TWI_IR1_CR_800/TWI_IR1_CR_800-{ts_local_dash}.jpg"
-      page: "https://www.cwa.gov.tw/V8/C/W/OBS_Sat.html"
+    # 紅外線色調強化（備用，目前不顯示）：
+    #   https://www.cwa.gov.tw/Data/satellite/TWI_IR1_CR_800/TWI_IR1_CR_800-{ts_local_dash}.jpg
 
 # keywords：直播標題必須「同時」包含所有關鍵字（頻道常同時開多個直播）
 streams:
