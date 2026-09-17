@@ -40,6 +40,8 @@
   section { border-top: 1px solid var(--line); padding: 24px 0 8px; }
   h2 { font-size: 1.6rem; font-weight: 500; line-height: 1.3; margin: 0 0 16px; }
   h2 small { display: block; color: var(--muted); font-weight: 400; font-size: .9rem; margin-top: 4px; }
+  h2 small .lg { margin-left: 14px; white-space: nowrap; }
+  h2 small .lg .mk { font-size: 1rem; }
   table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
   td, th { padding: 8px 6px; text-align: left; vertical-align: top; border-bottom: 1px dashed var(--line); font-weight: 400; }
   th { color: var(--muted); font-size: .85rem; }
@@ -65,7 +67,13 @@
   .fc thead th.date { text-align: left; padding-left: 10px; }
   .fc td.hr { min-width: 3.4em; color: var(--horizon); font-weight: 500; }
   .fc td.wx img { width: 40px; height: 40px; display: block; margin: 0 auto; }
-  .fc td.lv { font-size: .9rem; }
+  .fc td.lv { font-weight: 700; font-size: 1.15rem; line-height: 1; padding: 6px; }
+  .lv.good { color: var(--good); background: rgba(143, 211, 166, .18); }
+  .lv.ok { color: var(--ok); background: rgba(240, 195, 106, .18); }
+  .lv.bad { color: var(--bad); background: rgba(238, 127, 123, .18); }
+  .lv.q { color: var(--muted); }
+  .mk { display: inline-block; font-weight: 700; }
+  .mk.good { color: var(--good); } .mk.ok { color: var(--ok); } .mk.bad { color: var(--bad); }
   .fc td.empty { color: var(--none); }
 
   figure { margin: 0 0 28px; }
@@ -200,7 +208,7 @@
   </section>
 
   <section>
-    <div class="h2row"><h2>未來 24 小時預報<small>清境農場 逐 3 小時預報</small></h2><a class="src" href="https://www.cwa.gov.tw/V8/C/L/Farm/Farm.html?QS=&PID=E011" target="_blank" rel="noopener"><img src="icons/cwa.svg" alt="">中央氣象署</a></div>
+    <div class="h2row"><h2>未來 24 小時預報<small>清境農場 逐 3 小時預報<span class="lg">建議觀測：<b class="mk good">○</b> 適合　<b class="mk ok">△</b> 勉強　<b class="mk bad">✕</b> 不適合</span></small></h2><a class="src" href="https://www.cwa.gov.tw/V8/C/L/Farm/Farm.html?QS=&PID=E011" target="_blank" rel="noopener"><img src="icons/cwa.svg" alt="">中央氣象署</a></div>
     <div class="fc-wrap"><table class="fc" id="fc"></table></div>
   </section>
 
@@ -245,7 +253,7 @@
 
   <footer>
     <ul class="links" id="links"></ul>
-    <p>資料來源：中央氣象署（即時觀測、清境農場預報、雷達與衛星圖資）、Open-Meteo（雲量、降雨率）、7Timer!（視寧度、透明度）、meteoblue（氣象圖）、臺北天文館與親子觀星會 YouTube 直播。觀測判斷依氣象署天氣現象與 3 小時降雨機率。每 10 分鐘更新一次。</p>
+    <p>資料來源：中央氣象署、Open-Meteo、7Timer!、meteoblue、臺北天文館與親子觀星會 YouTube 直播。每 10 分鐘更新一次。</p>
     <p class="copy">© 2026 觀星園天文台. 本網站由倍勢科技設計與維護。</p>
   </footer>
 </main>
@@ -329,7 +337,7 @@
       if (n > 0) { spans.push({ s, n }); covered += n; }
     }
     const pad = hrs.length - covered > 0 ? `<td class="empty" colspan="${hrs.length - covered}">–</td>` : "";
-    const row3 = (label, cell, cls = "") => `<tr><th class="lbl">${label}</th>${spans.map(({ s, n }) => `<td class="${cls}" colspan="${n}">${cell(s)}</td>`).join("")}${pad}</tr>`;
+    const row3 = (label, cell, cls = "") => `<tr><th class="lbl">${label}</th>${spans.map(({ s, n }) => `<td class="${typeof cls === "function" ? cls(s) : cls}" colspan="${n}">${cell(s)}</td>`).join("")}${pad}</tr>`;
     const wxIcon = (s) => {
       if (!s.wcode) return s.weather || "–";
       const h = +s.start.slice(11, 13) + 1.5;                       // 時段中點判斷日／夜
@@ -339,7 +347,8 @@
     html += row3("天氣狀況", wxIcon, "wx");
     html += row3("降雨機率", s => s.pop != null ? s.pop + "%" : "–");
     html += row3("蒲福風級", s => s.beaufort != null ? s.beaufort : "–");
-    html += row3("觀測判斷", s => `<i class="dot ${s.level}"></i>${LABEL[s.level]}`, "lv");
+    const MARK = { good: "○", ok: "△", bad: "✕", "?": "–" };
+    html += row3("建議觀測", s => `<span title="${LABEL[s.level]}">${MARK[s.level]}</span>`, s => `lv ${s.level === "?" ? "q" : s.level}`);
     tbl.innerHTML = html + "</tbody>";
   })();
 
